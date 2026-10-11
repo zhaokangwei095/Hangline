@@ -168,14 +168,14 @@ public sealed class CardGestures
         }
     }
 
+    /// The cross is drawn 3pt inside the card's top-left corner; the hit box is
+    /// a little larger than the badge, as in the original's 26pt target.
     private bool HitCross(MouseButtonEventArgs e)
     {
         Point p = e.GetPosition(_view);
         Rect card = _view.CardRect(_model.Size);
-        double inset = Layout.FrameInset + 3;
-        var cross = new Rect(card.X, card.Y, Badges.CrossHit, Badges.CrossHit);
-        return p.X >= cross.X && p.X <= cross.X + Badges.CrossHit + inset &&
-               p.Y >= cross.Y && p.Y <= cross.Y + Badges.CrossHit + inset;
+        const double reach = Badges.CrossHit + Layout.FrameInset;
+        return p.X <= card.X + reach && p.Y <= card.Y + reach;
     }
 
     private void OnWheel(object sender, MouseWheelEventArgs e)

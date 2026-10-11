@@ -135,6 +135,17 @@ internal static class NativeMethods
     [DllImport("shell32.dll")]
     public static extern int SHQueryUserNotificationState(out tagQUNS state);
 
+    // PreserveSig stays true: the shell returns an HRESULT and the interface
+    // pointer comes back in the last parameter. Asking the runtime to turn the
+    // HRESULT into an exception corrupts that marshalling.
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    public static extern int SHCreateItemFromParsingName(
+        [MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr bindContext,
+        ref Guid riid, out IntPtr pv);
+
+    [DllImport("gdi32.dll")]
+    public static extern bool DeleteObject(IntPtr obj);
+
     // ---- clipboard ----
     public const uint WM_CLIPBOARDUPDATE = 0x031D;
     public const uint WM_HOTKEY = 0x0312;

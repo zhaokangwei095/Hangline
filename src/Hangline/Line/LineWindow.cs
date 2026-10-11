@@ -40,6 +40,8 @@ public sealed class LineWindow : Window, ILineHost
     private MonitorInfo _monitor;
     private double _scale = 1;
     private bool _placed;
+    private double _lastTrace;
+    private static readonly bool HitTrace = Environment.GetEnvironmentVariable("HANGLINE_HIT") == "1";
 
     public LineWindow(LineModel model)
     {
@@ -263,6 +265,16 @@ public sealed class LineWindow : Window, ILineHost
         // While the line is moving there is nothing reliable to click, and
         // flipping the window style every frame would flicker.
         bool settled = !_motion.RevealActive && !_motion.Retracting;
+
+        if (HitTrace && _poller.Now - _lastTrace > 2)
+        {
+            _lastTrace = _poller.Now;
+            var rects = _surface.CardRects();
+            var first = rects.Count > 0 ? rects.Values.First().ToString() : "none";
+            Shell.Log.Write($"hit: revealed={_model.Revealed} settled={settled} rects={rects.Count} " +
+                            $"cursor={cursorPhysical.X},{cursorPhysical.Y} scale={_scale} first={first} " +
+                            $"through={_passthrough?.IsThrough}");
+        }
         _passthrough?.Apply(settled ? _surface.CardRects() : new Dictionary<Guid, Rect>(),
                            cursorPhysical, _scale,
                            new Pt(window.Left, window.Top), forced: !settled);

@@ -11,9 +11,10 @@ reference — never edit it, never commit it).
   spring math, line rules, file naming and debouncing are all unit-testable
   without an STA thread. If a Core file needs `System.Windows`, it belongs in
   another folder.
-- `System.Drawing` is allowed in exactly three files: `Interop/Gdi.cs`,
-  `Shell/IconGen.cs`, `Capture/ClipboardImage.cs`. Everything else paints with
-  WPF `DrawingContext` and `BitmapSource`.
+- `System.Drawing` is allowed in exactly three files — `Interop/Gdi.cs`,
+  `Interop/ShellThumb.cs`, `Shell/IconGen.cs` — because the tray needs a GDI
+  `Icon`, a screen grab needs GDI, and the shell hands back an `HBITMAP`.
+  Everything else paints with WPF `DrawingContext` and `BitmapSource`.
 - `Shell/AppServices.cs` is the only composition point. Phases wire their piece
   there and nowhere else. There is no DI container on purpose.
 - A feature that does not exist yet is left out of the tray menu, not shown
@@ -44,7 +45,7 @@ already on PATH).
 
 ## Verifying the overlay without a human
 
-`HANGLINE_DEBUG` is a dev-only switch, checked in `AppServices.Startup`:
+Command-line switches, parsed in `Shell/Debug.cs` (dev-only):
 
 - `pin` — force the line down and never retract it
 - `hang <path>` — hang a file from the command line

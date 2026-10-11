@@ -25,6 +25,14 @@ public static class ThumbLoader
         try
         {
             double cap = MaxPixels(size);
+
+            if (FileKind.IsRecording(path))
+            {
+                BitmapSource? first = Interop.ShellThumb.Load(path, (int)cap);
+                if (first is null) return null;
+                return new Decoded(first, new SizeD(first.PixelWidth, first.PixelHeight));
+            }
+
             using var stream = OpenRead(path);
             BitmapSource frame = BitmapDecoder.Create(
                 stream, BitmapCreateOptions.IgnoreColorProfile, BitmapCacheOption.OnLoad).Frames[0];
