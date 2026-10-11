@@ -237,6 +237,10 @@ public sealed class LineModel
 
     public IReadOnlyList<PeggedItem> Live() => _items.Where(i => !i.IsFalling).ToList();
 
+    public bool NeighboursLeft(Guid id) => LineRules.Neighbours(_items, id, toTheLeft: true).Count > 0;
+
+    public bool NeighboursRight(Guid id) => LineRules.Neighbours(_items, id, toTheLeft: false).Count > 0;
+
     private string? PathOf(Guid id) => Find(id)?.Path;
 
     /// Decode a card's image and take its size from the same object, so layout

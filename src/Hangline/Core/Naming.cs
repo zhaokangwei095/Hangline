@@ -24,8 +24,8 @@ public static class Naming
 
     public static string ClipboardName(DateTime local, NameStyle style) =>
         style.Meridiem
-            ? $"剪贴板 {local:yyyy-MM-dd} {StampRaw(local, style)}.png"
-            : $"Clipboard {local:yyyy-MM-dd} at {local:HH.mm.ss}.png";
+            ? $"剪贴板 {local:yyyy-MM-dd} {Meridiem(local, style)}{StampRaw(local, style)}.png"
+            : $"Clipboard {local:yyyy-MM-dd} at {local:HH.mm:ss}.png".Replace(":", ".");
 
     public static string RecordingName(DateTime local, NameStyle style) =>
         $"{(style.Meridiem ? "录屏" : "Recording")} {local:yyyy-MM-dd}{Stamp(local, style)}.mp4";

@@ -77,6 +77,7 @@ public sealed class LineWindow : Window, ILineHost
 
         // Hover is the only pointer state the line has before gestures exist.
         _surface.NeedsFrames += StartFrames;
+        _surface.CardCreated += (view, item) => _ = new CardGestures(view, this);
 
         // A WPF window has no handle until it is shown, but the line must be
         // placed — and therefore measurable — long before the first reveal.
@@ -107,6 +108,38 @@ public sealed class LineWindow : Window, ILineHost
     public bool Revealed => _model.Revealed;
     public int LiveCount => _model.LiveCount;
     public LineModel Model => _model;
+    public MotionController Motion => _motion;
+
+    /// A gesture changed something that only a frame loop will finish.
+    public void StartMotion() => StartFrames();
+
+    public void RefreshAfterGesture()
+    {
+        _surface.InvalidateVisual();
+        StartFrames();
+    }
+
+    /// Paint and Photos save over the file without telling us, so the card asks
+    /// the disk until the bytes change, then swaps its own thumbnail in place.
+    public void WatchForEdit(PeggedItem item)
+    {
+        DateTime before = System.IO.File.GetLastWriteTimeUtc(item.Path);
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+        int tries = 0;
+        timer.Tick += (_, _) =>
+        {
+            if (++tries > 240) { timer.Stop(); return; }
+            try
+            {
+                if (System.IO.File.GetLastWriteTimeUtc(item.Path) == before) return;
+            }
+            catch (IOException) { return; }
+
+            timer.Stop();
+            _model.ReloadThumbnailFor(item.Path);
+        };
+        timer.Start();
+    }
 
     public void ShowAt(double x, double y) => Place(MonitorAt(new Pt(x, y)));
 

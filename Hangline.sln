@@ -7,6 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1AEFEBCC-4D8
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangline", "src\Hangline\Hangline.csproj", "{2AE6734A-19B8-450C-8CDE-201847BDD242}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F0038A23-E140-47BF-ADBC-81195ADD4E73}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangline.Tests", "tests\Hangline.Tests\Hangline.Tests.csproj", "{AA85BFF9-053C-4592-9EF2-24CEC89819DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,8 +24,13 @@ Global
 		{2AE6734A-19B8-450C-8CDE-201847BDD242}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2AE6734A-19B8-450C-8CDE-201847BDD242}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2AE6734A-19B8-450C-8CDE-201847BDD242}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA85BFF9-053C-4592-9EF2-24CEC89819DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA85BFF9-053C-4592-9EF2-24CEC89819DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA85BFF9-053C-4592-9EF2-24CEC89819DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA85BFF9-053C-4592-9EF2-24CEC89819DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{2AE6734A-19B8-450C-8CDE-201847BDD242} = {1AEFEBCC-4D82-439B-A21C-E99F68EDB89B}
+		{AA85BFF9-053C-4592-9EF2-24CEC89819DE} = {F0038A23-E140-47BF-ADBC-81195ADD4E73}
 	EndGlobalSection
 EndGlobal

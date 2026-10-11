@@ -63,7 +63,7 @@ public static class LineRules
         var live = new List<PeggedItem>();
         foreach (PeggedItem i in items) if (!i.IsFalling) live.Add(i);
         int at = live.FindIndex(i => i.Id == id);
-        if (at < 0) return live;
+        if (at < 0) return [];
         return toTheLeft ? live.GetRange(0, at) : live.GetRange(at + 1, live.Count - at - 1);
     }
 

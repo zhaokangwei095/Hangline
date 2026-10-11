@@ -1,0 +1,52 @@
+# Hangline 晾衣绳
+
+把每张截图挂到屏幕顶上的一根绳子上。
+
+移植自 macOS 应用 [Tendedero](https://github.com/alejandrobujan/tendedero)（MIT，
+但名称与图标不在授权范围内，所以这里是另一套名字和一枚代码绘制的衣夹）。
+Windows 版，免安装：整个文件夹拷到任何一台 Windows 10 / 11 上，双击
+`Hangline.exe` 就能用，不需要装 .NET 运行库。
+
+## 怎么用
+
+截一张图，它就挂上绳了。
+
+| | |
+|:--|:--|
+| 指针停在屏幕最上边缘 | 绳子带着照片滑下来；移开 0.5 秒后收起 |
+| 单击一张照片 | 复制（图片 + 文件两种形式，粘到微信是图、粘到资源管理器是文件） |
+| 双击 | 用系统默认程序打开 |
+| 长按 0.45 秒 | 标记（目前交给「画图」，保存后卡片就地换图） |
+| 拖到别的文件夹 | 移动过去，卡片从绳上取下 |
+| 拖到回收站 | 删除 |
+| 拖到别的程序里 | 送一份副本，原图仍挂在绳上 |
+| 点左上角的 ✕ | 自己收件夹里的图 → 回收站；别处的图 → 只是从绳上取下 |
+| 滚轮 | 图多了以后横向平移 |
+| <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>T</kbd> | 显示 / 隐藏绳子 |
+| <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd> | 截一块区域 |
+| <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> | 截全屏 |
+| <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>W</kbd> | 截当前窗口 |
+
+托盘图标（衣夹）右键是全部设置：尺寸、绳上保留多少张、额外监听哪些文件夹、
+什么时候放绳、要不要挂剪贴板里的图、开机自启、音效。
+
+自己截的图存在 `%APPDATA%\Hangline\Screenshots`；同时也会挂上
+`图片\Screenshots`、`视频\Captures` 和桌面上的新截图。
+
+## 从源码跑
+
+```powershell
+scripts/install-sdk.ps1   # 装 .NET 8 SDK 到用户目录，不需要管理员
+scripts/dev.ps1           # 编译并启动
+scripts/publish.ps1       # 产出 publish\Hangline\ 便携目录
+dotnet test               # 89 个单元测试
+```
+
+必须用 `Hangline.exe` 启动，不要用 `dotnet Hangline.dll`：进程的 DPI 感知度取自
+exe 的 manifest，走 dotnet 宿主时监视器尺寸会被系统按缩放比例虚拟化，量出来全是错的。
+
+## 已知与 Mac 版不一样的地方
+
+见 [docs/parity.md](docs/parity.md)——三处降级（玻璃没有真背景模糊、无法接管
+系统截图设置、拖到回收站依赖 shell）和一处重建（系统「标记」在 Windows 没有对应
+API，长按暂时交给画图）。

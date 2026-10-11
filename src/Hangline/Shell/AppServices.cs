@@ -55,6 +55,7 @@ public sealed partial class AppServices
             SoundOn = !Settings.SoundOff,
             QuietHang = Settings.QuietHang,
             InInbox = Inbox.IsInInbox,
+            PlaySound = SoundKit.Play,
             Recycle = Interop.FileOps.Recycle,
             Delay = Delay,
         };

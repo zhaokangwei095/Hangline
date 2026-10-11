@@ -29,6 +29,9 @@ public sealed class LineSurface : Canvas
     /// Something started moving that only a frame loop will finish.
     public event Action? NeedsFrames;
 
+    /// A card entered the visual tree and can now be given its gestures.
+    public event Action<CardView, PeggedItem>? CardCreated;
+
     public LineSurface(LineModel model, MotionController motion)
     {
         _model = model;
@@ -92,6 +95,7 @@ public sealed class LineSurface : Canvas
                     InInbox = _model.IsInInbox(item.Id),
                 };
                 WireHover(view, item.Id);
+                CardCreated?.Invoke(view, item);
                 _views[item.Id] = view;
                 Children.Add(view);
                 _motion.Arrive(item.Id);

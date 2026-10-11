@@ -60,9 +60,14 @@ public static class Layout
         _ => LineSize.Medium,
     };
 
-    public static double PhotoMaxHeight(LineSize size) => Math.Round(104 * ScaleOf(size));
+    /// The original rounds with <c>.rounded()</c>, which sends a .5 away from
+    /// zero; .NET's default rounds to even, which would make a large card 202
+    /// points wide instead of 203.
+    private static double Rounded(double value) => Math.Round(value, MidpointRounding.AwayFromZero);
 
-    public static double CardWidth(LineSize size) => Math.Round(150 * ScaleOf(size));
+    public static double PhotoMaxHeight(LineSize size) => Rounded(104 * ScaleOf(size));
+
+    public static double CardWidth(LineSize size) => Rounded(150 * ScaleOf(size));
 
     public static double Spacing(LineSize size) => CardWidth(size) + SpacingPad;
 
