@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Show line" xml:space="preserve">
+    <value>Show line</value>
+  </data>
+  <data name="Hide line" xml:space="preserve">
+    <value>Hide line</value>
+  </data>
+  <data name="Take everything down" xml:space="preserve">
+    <value>Take everything down</value>
+  </data>
+  <data name="Handle screenshots" xml:space="preserve">
+    <value>Handle screenshots</value>
+    <comment>Master switch for Hangline's own captures</comment>
+  </data>
+  <data name="Screenshots hang instantly and skip the Desktop" xml:space="preserve">
+    <value>Screenshots hang instantly and skip the Desktop</value>
+  </data>
+  <data name="Hang copied images" xml:space="preserve">
+    <value>Hang copied images</value>
+  </data>
+  <data name="Images you copy hang on the line too" xml:space="preserve">
+    <value>Images you copy hang on the line too</value>
+  </data>
+  <data name="Bring the line down" xml:space="preserve">
+    <value>Bring the line down</value>
+  </data>
+  <data name="When the pointer rests at the top edge" xml:space="preserve">
+    <value>When the pointer rests at the top edge</value>
+  </data>
+  <data name="When something new hangs" xml:space="preserve">
+    <value>When something new hangs</value>
+  </data>
+  <data name="Over full screen apps" xml:space="preserve">
+    <value>Over full screen apps</value>
+  </data>
+  <data name="Also watch folders" xml:space="preserve">
+    <value>Also watch folders</value>
+  </data>
+  <data name="Add Folder…" xml:space="preserve">
+    <value>Add Folder…</value>
+  </data>
+  <data name="Stop Watching All" xml:space="preserve">
+    <value>Stop Watching All</value>
+  </data>
+  <data name="Keep on line" xml:space="preserve">
+    <value>Keep on line</value>
+  </data>
+  <data name="As many as fit" xml:space="preserve">
+    <value>As many as fit</value>
+  </data>
+  <data name="{0} photos" xml:space="preserve">
+    <value>{0} photos</value>
+  </data>
+  <data name="Size" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="Small" xml:space="preserve">
+    <value>Small</value>
+  </data>
+  <data name="Medium" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="Large" xml:space="preserve">
+    <value>Large</value>
+  </data>
+  <data name="Shortcut" xml:space="preserve">
+    <value>Shortcut</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="Change Shortcut…" xml:space="preserve">
+    <value>Change Shortcut…</value>
+  </data>
+  <data name="Open screenshots folder" xml:space="preserve">
+    <value>Open screenshots folder</value>
+  </data>
+  <data name="Sounds" xml:space="preserve">
+    <value>Sounds</value>
+  </data>
+  <data name="Open at login" xml:space="preserve">
+    <value>Open at login</value>
+  </data>
+  <data name="Quit" xml:space="preserve">
+    <value>Quit</value>
+  </data>
+  <data name="Take a screenshot and it will hang here" xml:space="preserve">
+    <value>Take a screenshot and it will hang here</value>
+  </data>
+  <data name="Copied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="Open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="Quick Look" xml:space="preserve">
+    <value>Quick Look</value>
+  </data>
+  <data name="Markup" xml:space="preserve">
+    <value>Markup</value>
+  </data>
+  <data name="Open in Paint" xml:space="preserve">
+    <value>Open in Paint</value>
+  </data>
+  <data name="Show in folder" xml:space="preserve">
+    <value>Show in folder</value>
+  </data>
+  <data name="Save to Desktop" xml:space="preserve">
+    <value>Save to Desktop</value>
+  </data>
+  <data name="Discard" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="Take down" xml:space="preserve">
+    <value>Take down</value>
+  </data>
+  <data name="Move to Recycle Bin" xml:space="preserve">
+    <value>Move to Recycle Bin</value>
+  </data>
+  <data name="Take down everything to the left" xml:space="preserve">
+    <value>Take down everything to the left</value>
+  </data>
+  <data name="Take down everything to the right" xml:space="preserve">
+    <value>Take down everything to the right</value>
+  </data>
+</root>

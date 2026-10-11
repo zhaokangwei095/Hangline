@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Show line" xml:space="preserve">
+    <value>把绳子放下来</value>
+  </data>
+  <data name="Hide line" xml:space="preserve">
+    <value>把绳子收起来</value>
+  </data>
+  <data name="Take everything down" xml:space="preserve">
+    <value>全部取下</value>
+  </data>
+  <data name="Handle screenshots" xml:space="preserve">
+    <value>接管截图</value>
+  </data>
+  <data name="Screenshots hang instantly and skip the Desktop" xml:space="preserve">
+    <value>拍下的瞬间即挂上绳，完全跳过桌面</value>
+  </data>
+  <data name="Hang copied images" xml:space="preserve">
+    <value>挂上复制的图片</value>
+  </data>
+  <data name="Images you copy hang on the line too" xml:space="preserve">
+    <value>你复制的图片也挂上绳</value>
+  </data>
+  <data name="Bring the line down" xml:space="preserve">
+    <value>什么时候放绳</value>
+  </data>
+  <data name="When the pointer rests at the top edge" xml:space="preserve">
+    <value>指针停在屏幕顶部时</value>
+  </data>
+  <data name="When something new hangs" xml:space="preserve">
+    <value>有新图挂上时</value>
+  </data>
+  <data name="Over full screen apps" xml:space="preserve">
+    <value>盖住全屏应用</value>
+  </data>
+  <data name="Also watch folders" xml:space="preserve">
+    <value>另外监听这些文件夹</value>
+  </data>
+  <data name="Add Folder…" xml:space="preserve">
+    <value>添加文件夹…</value>
+  </data>
+  <data name="Stop Watching All" xml:space="preserve">
+    <value>全部停止监听</value>
+  </data>
+  <data name="Keep on line" xml:space="preserve">
+    <value>绳上保留</value>
+  </data>
+  <data name="As many as fit" xml:space="preserve">
+    <value>放得下多少算多少</value>
+  </data>
+  <data name="{0} photos" xml:space="preserve">
+    <value>{0} 张</value>
+  </data>
+  <data name="Size" xml:space="preserve">
+    <value>尺寸</value>
+  </data>
+  <data name="Small" xml:space="preserve">
+    <value>小</value>
+  </data>
+  <data name="Medium" xml:space="preserve">
+    <value>中</value>
+  </data>
+  <data name="Large" xml:space="preserve">
+    <value>大</value>
+  </data>
+  <data name="Shortcut" xml:space="preserve">
+    <value>快捷键</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>无</value>
+  </data>
+  <data name="Change Shortcut…" xml:space="preserve">
+    <value>更改快捷键…</value>
+  </data>
+  <data name="Open screenshots folder" xml:space="preserve">
+    <value>打开截图文件夹</value>
+  </data>
+  <data name="Sounds" xml:space="preserve">
+    <value>音效</value>
+  </data>
+  <data name="Open at login" xml:space="preserve">
+    <value>登录时启动</value>
+  </data>
+  <data name="Quit" xml:space="preserve">
+    <value>退出</value>
+  </data>
+  <data name="Take a screenshot and it will hang here" xml:space="preserve">
+    <value>截一张图，它就挂在这儿</value>
+  </data>
+  <data name="Copied" xml:space="preserve">
+    <value>已复制</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>复制</value>
+  </data>
+  <data name="Open" xml:space="preserve">
+    <value>打开</value>
+  </data>
+  <data name="Quick Look" xml:space="preserve">
+    <value>快速查看</value>
+  </data>
+  <data name="Markup" xml:space="preserve">
+    <value>标记</value>
+  </data>
+  <data name="Open in Paint" xml:space="preserve">
+    <value>用「画图」打开</value>
+  </data>
+  <data name="Show in folder" xml:space="preserve">
+    <value>在文件夹中显示</value>
+  </data>
+  <data name="Save to Desktop" xml:space="preserve">
+    <value>存到桌面</value>
+  </data>
+  <data name="Discard" xml:space="preserve">
+    <value>丢弃</value>
+  </data>
+  <data name="Take down" xml:space="preserve">
+    <value>取下</value>
+  </data>
+  <data name="Move to Recycle Bin" xml:space="preserve">
+    <value>移到回收站</value>
+  </data>
+  <data name="Take down everything to the left" xml:space="preserve">
+    <value>取下左边全部</value>
+  </data>
+  <data name="Take down everything to the right" xml:space="preserve">
+    <value>取下右边全部</value>
+  </data>
+</root>

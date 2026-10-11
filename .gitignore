@@ -1,0 +1,7 @@
+bin/
+obj/
+publish/
+_shots/
+*.user
+.vs/
+_ref_tendedero/

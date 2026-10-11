@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- One TFM gives WPF plus the WinRT projections (VideoEditingService) without multi-targeting. -->
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <!-- Unpackaged WinRT activation: without this the WinRT classes refuse to start. -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <RootNamespace>Hangline</RootNamespace>
+    <AssemblyName>Hangline</AssemblyName>
+    <Version>0.1.0</Version>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <SatelliteResourceLanguages>zh-Hans;en</SatelliteResourceLanguages>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <!-- System.Drawing is deliberately available but confined to three files; see AGENTS.md. -->
+    <NoWarn>$(NoWarn);CA1416;CS0618;WFAC010</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      UseWindowsForms injects two global usings that collide with WPF:
+      System.Windows.Forms (Application, Clipboard, MessageBox) and
+      System.Drawing (Brush, Pen, Point). Both go; the few WinForms and GDI
+      types actually used are named through an alias. System.IO is added back
+      because a WindowsDesktop project does not get it implicitly, and this app
+      is mostly files.
+      WFAC010 is silenced on purpose: WPF reads DPI awareness from the manifest
+      (PerMonitorV2), which is exactly what the WinForms warning asks you to remove.
+    -->
+    <Using Include="System.IO" />
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="Exists('Resources\hangline.ico')">
+    <ApplicationIcon>Resources\hangline.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" Version="8.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\hangline.ico" Condition="Exists('Resources\hangline.ico')" />
+  </ItemGroup>
+
+</Project>
