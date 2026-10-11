@@ -9,13 +9,23 @@
 #>
 param([string[]] $Extra = @())
 
-$ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $proj = Join-Path $root 'src/Hangline/Hangline.csproj'
 
+# The SDK was installed per-user, so a shell that started before that has no
+# PATH entry for it. Find it rather than assume.
+$dotnet = (Get-Command dotnet -ErrorAction SilentlyContinue).Source
+if (-not $dotnet) {
+    $local = Join-Path $env:LOCALAPPDATA 'Microsoft\dotnet\dotnet.exe'
+    if (Test-Path $local) { $dotnet = $local }
+}
+if (-not $dotnet) { Write-Error 'dotnet SDK not found; run scripts/install-sdk.ps1'; exit 1 }
+
 & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'stop.ps1')
-dotnet build $proj -v q --nologo
-if ($LASTEXITCODE) { exit $LASTEXITCODE }
+# Never set ErrorActionPreference='Stop' around a native command: MSBuild writes
+# warnings to stderr, and Windows PowerShell turns that into a terminating error.
+& $dotnet build $proj -v q --nologo
+if ($LASTEXITCODE -ne 0) { Write-Error "build failed ($LASTEXITCODE)"; exit $LASTEXITCODE }
 
 $exe = Join-Path $root 'src/Hangline/bin/Debug/net8.0-windows10.0.19041.0/Hangline.exe'
 if ($Extra.Count -gt 0) { Start-Process $exe -ArgumentList $Extra }

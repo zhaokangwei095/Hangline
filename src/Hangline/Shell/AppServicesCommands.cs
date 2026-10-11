@@ -9,7 +9,7 @@ namespace Hangline.Shell;
 /// </summary>
 public sealed partial class AppServices
 {
-    public string? ShortcutDisplay => Settings.Shortcut is { IsEmpty: false } ? "Ctrl+Alt+T" : null;
+    public string ShortcutDisplay => ToggleKey.Current.Display;
 
     public void ToggleLine()
     {
@@ -24,9 +24,17 @@ public sealed partial class AppServices
         Save();
     }
 
+    /// The three "when to bring the line down" switches all land here.
+    public void ApplyRevealToggles()
+    {
+        Save();
+        ApplyRevealSettings();
+    }
+
     public void SetClipboardEnabled(bool on)
     {
         Settings.ClipboardEnabled = on;
+        Clipboards.IsEnabled = on;
         Save();
         Tray.RefreshIcon();
     }
@@ -41,6 +49,7 @@ public sealed partial class AppServices
     {
         if (Settings.KeepOnLine == n) return;
         Settings.KeepOnLine = n;
+        Model.KeepOnLine = Settings.KeepChoice;
         Save();
         Line?.ApplyLayoutChanges();
         Tray.RebuildMenu();
@@ -51,6 +60,7 @@ public sealed partial class AppServices
         if (Settings.LineSize == size) return;
         Settings.LineSize = size;
         Save();
+        SetLineSizeCore(size);
         Line?.ApplyLayoutChanges();
     }
 

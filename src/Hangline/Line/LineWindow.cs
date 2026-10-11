@@ -60,6 +60,7 @@ public sealed class LineWindow : Window, ILineHost
 
         _reveal.Apply = ShowLine;
         _reveal.Busy = () => _model.PressedId is not null || _model.DraggingId is not null || MenuOpen;
+        _reveal.Blocked = () => BlockedByFullScreen;
         _reveal.LiveCount = () => _model.LiveCount;
         _poller.Ticked += OnPoll;
 
@@ -92,6 +93,16 @@ public sealed class LineWindow : Window, ILineHost
 
     /// Set while a context menu is up, so the line does not slide away under it.
     public bool MenuOpen { get; set; }
+
+    public bool RevealOnEdge { get => _reveal.RevealOnEdge; set => _reveal.RevealOnEdge = value; }
+    public bool RevealOnPeek { get => _reveal.RevealOnPeek; set => _reveal.RevealOnPeek = value; }
+
+    /// A game or a presentation owns the screen; the line keeps out of it unless
+    /// the user asked for the opposite.
+    public bool ShowOverFullScreen { get; set; }
+
+    private bool BlockedByFullScreen =>
+        !ShowOverFullScreen && FullscreenProbe.CoversScreen(_monitor.Bounds);
 
     public bool Revealed => _model.Revealed;
     public int LiveCount => _model.LiveCount;

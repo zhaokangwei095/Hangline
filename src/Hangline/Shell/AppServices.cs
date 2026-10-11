@@ -38,6 +38,8 @@ public sealed partial class AppServices
         Tray = new TrayController(this);
         Tray.Show();
         StartupLine();
+        StartupInputs();
+        ApplyRevealSettings();
         Debug.Handle(args, this);
         Log.Write($"started, config at {Store.FilePath}");
     }
@@ -93,6 +95,13 @@ public sealed partial class AppServices
     {
         if (LineWindow?.IsVisible == true) Settings.Pegged = Model.PathsToSave().ToList();
         Save();
+        (Watchers as IDisposable)?.Dispose();
+        Clipboards.Dispose();
+        ToggleKey.Dispose();
+        RegionKey.Dispose();
+        FullscreenKey.Dispose();
+        WindowKey.Dispose();
+        Sink.Dispose();
         Tray.Dispose();
         LineWindow?.Close();
         Log.Write("quit");

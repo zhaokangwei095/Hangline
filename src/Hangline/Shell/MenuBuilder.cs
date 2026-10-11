@@ -34,11 +34,11 @@ public static class MenuBuilder
 
         var bring = Submenu(menu.Items, T("Bring the line down"));
         Radio(bring, T("When the pointer rests at the top edge"), !s.RevealOnEdgeOff,
-              on => s.RevealOnEdgeOff = !on);
+              on => { s.RevealOnEdgeOff = !on; app.ApplyRevealToggles(); });
         Radio(bring, T("When something new hangs"), s.RevealOnNewHang,
-              on => s.RevealOnNewHang = on);
+              on => { s.RevealOnNewHang = on; app.ApplyRevealToggles(); });
         Radio(bring, T("Over full screen apps"), s.ShowOverFullScreen,
-              on => s.ShowOverFullScreen = on);
+              on => { s.ShowOverFullScreen = on; app.ApplyRevealToggles(); });
 
         var watch = Submenu(menu.Items, T("Also watch folders"));
         foreach (string folder in s.ExtraFolders)

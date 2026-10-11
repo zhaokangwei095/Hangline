@@ -30,6 +30,15 @@ internal static class NativeMethods
 
     public delegate bool MonitorEnumProc(IntPtr monitor, IntPtr hdc, IntPtr rect, IntPtr data);
 
+    public const int SM_XVIRTUALSCREEN = 76;
+    public const int SM_YVIRTUALSCREEN = 77;
+    public const int SM_CXVIRTUALSCREEN = 78;
+    public const int SM_CYVIRTUALSCREEN = 79;
+    public const int SM_CDOUBLECLICKTIME = 37;
+
+    [DllImport("user32.dll")]
+    public static extern int GetSystemMetrics(int index);
+
     [DllImport("user32.dll")]
     public static extern bool GetCursorPos(out POINT point);
 
@@ -125,4 +134,23 @@ internal static class NativeMethods
 
     [DllImport("shell32.dll")]
     public static extern int SHQueryUserNotificationState(out tagQUNS state);
+
+    // ---- clipboard ----
+    public const uint WM_CLIPBOARDUPDATE = 0x031D;
+    public const uint WM_HOTKEY = 0x0312;
+    public static readonly IntPtr HWND_MESSAGE = new(-3);
+
+    [DllImport("user32.dll")]
+    public static extern bool AddClipboardFormatListener(IntPtr hwnd);
+
+    [DllImport("user32.dll")]
+    public static extern bool RemoveClipboardFormatListener(IntPtr hwnd);
+
+    [DllImport("user32.dll")]
+    public static extern bool RegisterHotKey(IntPtr hwnd, int id, uint modifiers, uint virtualKey);
+
+    [DllImport("user32.dll")]
+    public static extern bool UnregisterHotKey(IntPtr hwnd, int id);
+
+    public const uint MOD_ALT = 0x1, MOD_CONTROL = 0x2, MOD_SHIFT = 0x4, MOD_NOREPEAT = 0x4000;
 }

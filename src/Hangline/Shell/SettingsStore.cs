@@ -57,6 +57,20 @@ public sealed class Settings
 
     public int? KeepChoice => KeepOnLine is 25 or 50 or 100 ? KeepOnLine : null;
 
+    /// An absent shortcut still means Ctrl+Alt+T; only an explicit empty entry
+    /// turns it off, matching the original.
+    public Core.Shortcut ToShortcut() => Shortcut is { IsEmpty: false } s
+        ? new Core.Shortcut(s.VirtualKey, (Core.HotKeyModifiers)s.Modifiers, s.Key)
+        : Core.Shortcut.Standard;
+
+    public void SetShortcut(Core.Shortcut shortcut) =>
+        Shortcut = new ShortcutSettings
+        {
+            VirtualKey = shortcut.VirtualKey,
+            Modifiers = (int)shortcut.Modifiers,
+            Key = shortcut.Label,
+        };
+
     public void Normalize()
     {
         if (LineSize is not ("small" or "medium" or "large")) LineSize = "medium";

@@ -31,6 +31,9 @@ public sealed class RevealController
     public bool RevealOnEdge { get; set; } = true;
     public bool RevealOnPeek { get; set; } = true;
     public Func<bool> Busy { get; set; } = () => false;
+
+    /// Something else owns the screen; the line does not come down at all.
+    public Func<bool> Blocked { get; set; } = () => false;
     public Func<int> LiveCount { get; set; } = () => 0;
     public Action<bool> Apply { get; set; } = _ => { };
 
@@ -64,6 +67,13 @@ public sealed class RevealController
 
     public void Tick(double now, double dt, bool inBand, bool insidePanel)
     {
+        if (Blocked())
+        {
+            _dwell = 0;
+            Want(false);
+            return;
+        }
+
         if (Pinned)
         {
             Want(true);
