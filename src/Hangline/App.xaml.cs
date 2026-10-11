@@ -15,6 +15,8 @@ public partial class App : Application
 
         if (!ClaimSingleton())
         {
+            // Silent exit here looks exactly like a launch that failed.
+            Log.Write("another Hangline is already running; this one quits");
             Shutdown();
             return;
         }

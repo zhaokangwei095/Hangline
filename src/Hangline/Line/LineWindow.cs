@@ -150,12 +150,21 @@ public sealed class LineWindow : Window, ILineHost
         _scale = monitor.Scale;
 
         double panelHeight = Layout.PanelHeight(_model.Size);
-        int physicalHeight = (int)Math.Round(panelHeight * _scale);
 
-        NativeMethods.SetWindowPos(_hwnd, NativeMethods.HWND_TOPMOST,
-            (int)monitor.Bounds.X, (int)monitor.Bounds.Y,
-            (int)monitor.Bounds.Width, physicalHeight,
-            NativeMethods.SWP_NOACTIVATE);
+        // WPF keeps its own book of where the window is and rewrites the real
+        // window rect from it on the next layout pass — a SetWindowPos here is
+        // quietly undone moments later. So placement goes through WPF's units
+        // and only the z-order is forced natively.
+        Left = monitor.Bounds.X / _scale;
+        Top = monitor.Bounds.Y / _scale;
+        Width = monitor.Bounds.Width / _scale;
+        Height = panelHeight;
+
+        if (_hwnd != IntPtr.Zero)
+        {
+            NativeMethods.SetWindowPos(_hwnd, NativeMethods.HWND_TOPMOST, 0, 0, 0, 0,
+                NativeMethods.SWP_NOMOVE | NativeMethods.SWP_NOSIZE | NativeMethods.SWP_NOACTIVATE);
+        }
 
         _surface.Resize(monitor.Bounds.Width / _scale, panelHeight);
         _motion.PanelHeight = panelHeight;
