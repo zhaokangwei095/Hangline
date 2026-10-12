@@ -53,6 +53,12 @@ public sealed class CardGestures
         view.MouseMove += OnMove;
         view.MouseLeftButtonUp += OnUp;
         view.MouseRightButtonUp += (_, _) => ShowMenu();
+        // The closest Windows has to a force click: WPF has no middle-button
+        // event on UIElement, so the tunneling press is filtered by button.
+        view.PreviewMouseDown += (_, e) =>
+        {
+            if (e.ChangedButton == MouseButton.Middle) Actions.QuickLook(_model, Item);
+        };
         view.MouseWheel += OnWheel;
         view.MouseLeave += (_, _) => { _hold.Stop(); if (_armed) Release(); };
     }
@@ -193,6 +199,7 @@ public sealed class CardGestures
 
         Add(menu, T("Copy"), () => { if (Actions.Copy(Item)) { _model.CopiedId = Item.Id; _model.ClearCopiedFlag(); } });
         Add(menu, T("Open"), () => Actions.Open(Item));
+        Add(menu, T("Quick Look"), () => Actions.QuickLook(_model, Item));
         Add(menu, T("Markup"), OnLongPress);
         Add(menu, T("Show in folder"), () => Actions.Reveal(Item));
 

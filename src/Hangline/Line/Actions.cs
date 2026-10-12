@@ -51,6 +51,15 @@ public static class Actions
     public static void Reveal(PeggedItem item) =>
         Start("explorer.exe", $"/select,\"{item.Path}\"");
 
+    /// Quick Look: look at the photo without opening anything. Windows has no
+    /// force click, so the line also answers a middle click with it.
+    public static void QuickLook(LineModel model, PeggedItem item)
+    {
+        List<PeggedItem> live = model.Live().ToList();
+        int at = live.FindIndex(p => p.Id == item.Id);
+        Overlay.PreviewHost.Show(live, Math.Max(0, at));
+    }
+
     /// The Windows stand-in for macOS's Markup until the in-app editor lands.
     public static void EditExternally(PeggedItem item) => Start("mspaint.exe", $"\"{item.Path}\"");
 

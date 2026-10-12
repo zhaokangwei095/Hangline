@@ -54,6 +54,12 @@ public static class Debug
                         NativeMethods.SetCursorPos(x, y);
                     break;
 
+                case "--preview":
+                    var live = app.Model.Live();
+                    if (live.Count > 0)
+                        Overlay.PreviewHost.Show(live, live.Count - 1);
+                    break;
+
                 case "--size" when i + 1 < args.Length:
                     app.SetLineSize(args[++i]);
                     break;
