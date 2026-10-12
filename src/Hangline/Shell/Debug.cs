@@ -105,6 +105,13 @@ public static class Debug
                     new Overlay.TrimWindow(args[++i]).Show();
                     break;
 
+                // The tray icon is drawn in code; the exe's own file icon has to
+                // exist on disk at build time, so this writes it once.
+                case "--make-ico" when i + 1 < args.Length:
+                    IconGen.WriteIco(args[++i], [16, 24, 32, 48, 64, 128, 256]);
+                    Log.Write($"wrote {args[i]}");
+                    break;
+
                 case "--size" when i + 1 < args.Length:
                     app.SetLineSize(args[++i]);
                     break;
