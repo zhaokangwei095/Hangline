@@ -68,8 +68,6 @@ public sealed class MotionController
 
     public CardMotion this[PeggedItem item] => Get(item.Id);
 
-    public bool Has(Guid id) => _cards.ContainsKey(id);
-
     public void Forget(Guid id) => _cards.Remove(id);
 
     public IReadOnlyDictionary<Guid, CardMotion> Cards => _cards;
@@ -146,10 +144,6 @@ public sealed class MotionController
         m.Pressed = on;
         if (!on) m.ScaleVel = 0;
     }
-
-    public void FadeIn(Guid id) => Get(id).Opacity = 1;
-
-    public void SetOpacity(Guid id, double value) => Get(id).Opacity = value;
 
     /// Advance everything. Returns false when nothing moved, so the caller can
     /// stop asking for frames and leave the GPU alone.

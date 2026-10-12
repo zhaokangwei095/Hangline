@@ -112,6 +112,16 @@ public static class Debug
                     Log.Write($"wrote {args[i]}");
                     break;
 
+                // Control experiment: is the hotkey machinery broken, or just the
+                // keys we picked? Bind something utterly ordinary.
+                case "--record":
+                    app.RecordShortcut();
+                    break;
+
+                case "--test-hotkey":
+                    Log.Write($"test bind: {app.Keys.TryBind("test", new Shortcut(0x7B, HotKeyModifiers.Control | HotKeyModifiers.Alt, "F12"), () => Log.Write("TEST HOTKEY FIRED"))}");
+                    break;
+
                 case "--size" when i + 1 < args.Length:
                     app.SetLineSize(args[++i]);
                     break;

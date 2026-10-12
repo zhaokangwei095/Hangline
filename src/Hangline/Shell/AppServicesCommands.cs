@@ -9,7 +9,9 @@ namespace Hangline.Shell;
 /// </summary>
 public sealed partial class AppServices
 {
-    public string ShortcutDisplay => ToggleKey.Current.Display;
+    /// Never throw while building a menu: a tray app that dies because one
+    /// readout has no source yet is worse than a readout that says "—".
+    public string ShortcutDisplay => Keys?.Current(Toggle).Display ?? Settings.ToShortcut().Display;
 
     public void ToggleLine()
     {
@@ -23,6 +25,7 @@ public sealed partial class AppServices
         Settings.InboxEnabled = on;
         Save();
         Watchers?.Apply();
+        ApplySnapshotKey();
     }
 
     /// The three "when to bring the line down" switches all land here.
@@ -77,9 +80,6 @@ public sealed partial class AppServices
         Start(new ProcessStartInfo("explorer.exe", EscapeArg(path)) { UseShellExecute = true });
     }
 
-    public void RevealInFolder(string filePath) =>
-        Start(new ProcessStartInfo("explorer.exe", $"/select,{EscapeArg(filePath)}") { UseShellExecute = true });
-
     /// explorer.exe parses its own command line, so quoting rather than ArgumentList.
     private static string EscapeArg(string path) => $"\"{path}\"";
 
@@ -110,12 +110,24 @@ public sealed partial class AppServices
         Tray.RebuildMenu();
     }
 
-    public void ClearExtraFolders()
+    public void RemoveExtraFolder(string folder)
     {
-        Settings.ExtraFolders.Clear();
+        Settings.ExtraFolders.RemoveAll(f => string.Equals(f, folder, StringComparison.OrdinalIgnoreCase));
         Save();
         Watchers?.Apply();
         Tray.RebuildMenu();
+    }
+
+    /// <summary>Open the recorder for the show/hide shortcut. If Windows refuses
+    /// the new combination the old one is kept, so the user is never left with a
+    /// shortcut that does nothing.</summary>
+    public void RecordShortcut()
+    {
+        var recorder = new Input.ShortcutRecorderWindow(
+            Keys.Current(Toggle),
+            shortcut => Rebind(Toggle, shortcut),
+            () => Tray.RebuildMenu());
+        recorder.Show();
     }
 
     public bool AutostartIsOn => Autostart.IsEnabled();

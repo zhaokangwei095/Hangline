@@ -102,7 +102,7 @@ public class DebouncerTests
 
         public IDisposable Schedule(TimeSpan delay, Action action)
         {
-            var token = new Token(delay, action);
+            var token = new Token(action);
             _tokens.Add(token);
             return token;
         }
@@ -117,7 +117,7 @@ public class DebouncerTests
 
         public int Pending => _tokens.Count(t => !t.Cancelled);
 
-        private sealed class Token(TimeSpan delay, Action action) : IDisposable
+        private sealed class Token(Action action) : IDisposable
         {
             public bool Cancelled { get; private set; }
 
@@ -174,18 +174,4 @@ public class DebouncerTests
         Assert.Equal(0, runs);
     }
 
-    [Fact]
-    public void A_throttle_runs_immediately_then_once_more()
-    {
-        var scheduler = new FakeScheduler();
-        int runs = 0;
-        using var throttle = new Throttle(TimeSpan.FromMilliseconds(33), () => runs++, scheduler);
-
-        throttle.Trigger();          // within the interval: queued
-        Assert.Equal(1, runs);       // the first one is immediate
-        throttle.Trigger();
-        throttle.Trigger();          // both coalesce into the one already queued
-        scheduler.RunDue();
-        Assert.Equal(2, runs);
-    }
 }

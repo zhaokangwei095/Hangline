@@ -153,7 +153,6 @@ public class LayoutTests
     {
         double rope = 40;
         Assert.Equal(rope - Layout.PinAbove, Layout.PinTopY(rope));
-        Assert.Equal(rope - Layout.PinAbove + Layout.CardOffsetBelowTop, Layout.CardTopY(rope));
         Assert.Equal(14, Layout.CardOffsetBelowTop);
     }
 

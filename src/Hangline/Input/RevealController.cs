@@ -43,7 +43,16 @@ public sealed class RevealController
     /// so dismissing a menu there does not immediately drop a line.
     public bool Suppressed { get; private set; }
 
-    public void SuppressUntilOutOfBand() => Suppressed = true;
+    /// The original does this on any click in the menu bar: the line goes away
+    /// and stays away until the pointer leaves the band, so closing a menu at
+    /// the top of the screen is not answered by a line dropping down again.
+    public void ClickedInBand()
+    {
+        Suppressed = true;
+        _dwell = 0;
+        _manual = false;
+        Want(false);
+    }
 
     public void Toggle()
     {

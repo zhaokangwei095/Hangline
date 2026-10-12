@@ -52,8 +52,8 @@
   <data name="Add Folder…" xml:space="preserve">
     <value>Add Folder…</value>
   </data>
-  <data name="Stop Watching All" xml:space="preserve">
-    <value>Stop Watching All</value>
+  <data name="Stop Watching" xml:space="preserve">
+    <value>Stop Watching</value>
   </data>
   <data name="Keep on line" xml:space="preserve">
     <value>Keep on line</value>
@@ -177,5 +177,17 @@
   </data>
   <data name="The trim failed; the file is unchanged." xml:space="preserve">
     <value>The trim failed; the file is unchanged.</value>
+  </data>
+  <data name="Press the new shortcut" xml:space="preserve">
+    <value>Press the new shortcut</value>
+  </data>
+  <data name="Backspace removes it." xml:space="preserve">
+    <value>Backspace removes it.</value>
+  </data>
+  <data name="Hold Ctrl, Alt or Shift with it" xml:space="preserve">
+    <value>Hold Ctrl, Alt or Shift with it</value>
+  </data>
+  <data name="{0} is already used by another app" xml:space="preserve">
+    <value>{0} is already used by another app</value>
   </data>
 </root>

@@ -5,10 +5,6 @@ namespace Hangline.Core;
 public readonly record struct Pt(double X, double Y)
 {
     public static readonly Pt Zero = new(0, 0);
-
-    public Pt Offset(double dx, double dy) => new(X + dx, Y + dy);
-
-    public double DistanceTo(Pt other) => Math.Sqrt((X - other.X) * (X - other.X) + (Y - other.Y) * (Y - other.Y));
 }
 
 public readonly record struct SizeD(double Width, double Height)
@@ -43,17 +39,6 @@ public readonly record struct RectD(double X, double Y, double Width, double Hei
     public bool Contains(Pt p) => p.X >= Left && p.X < Right && p.Y >= Top && p.Y < Bottom;
 
     public bool Contains(double x, double y) => Contains(new Pt(x, y));
-
-    public RectD WithCenter(double cx, double cy) => new(cx - Width / 2, cy - Height / 2, Width, Height);
-
-    public static RectD Union(RectD a, RectD b)
-    {
-        if (a.IsEmpty) return b;
-        if (b.IsEmpty) return a;
-        double x = Math.Min(a.Left, b.Left);
-        double y = Math.Min(a.Top, b.Top);
-        return new RectD(x, y, Math.Max(a.Right, b.Right) - x, Math.Max(a.Bottom, b.Bottom) - y);
-    }
 
     public static RectD FromPoints(Pt a, Pt b)
     {

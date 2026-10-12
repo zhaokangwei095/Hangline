@@ -49,9 +49,20 @@ public static class MenuBuilder
             item.ToolTipText = captured;
         }
         if (s.ExtraFolders.Count > 0) watch.DropDownItems.Add(new Forms.ToolStripSeparator());
-        Add(watch.DropDownItems, T("Add Folder…"), onClick: app.AddExtraFolder);
-        if (s.ExtraFolders.Count >= 3)
-            Add(watch.DropDownItems, T("Stop Watching All"), onClick: app.ClearExtraFolders);
+        // Three is what the original allows; a line that could only be clicked
+        // to fail is left out instead of shown disabled.
+        if (s.ExtraFolders.Count < 3)
+            Add(watch.DropDownItems, T("Add Folder…"), onClick: app.AddExtraFolder);
+        if (s.ExtraFolders.Count > 0)
+        {
+            var stop = Submenu(watch.DropDownItems, T("Stop Watching"));
+            foreach (string folder in s.ExtraFolders)
+            {
+                string captured = folder;
+                string name = Path.GetFileName(captured.TrimEnd('\\')) is { Length: > 0 } n ? n : captured;
+                Add(stop.DropDownItems, name, onClick: () => app.RemoveExtraFolder(captured));
+            }
+        }
 
         var keep = Submenu(menu.Items, T("Keep on line"));
         Radio(keep, T("As many as fit"), s.KeepChoice is null, on => app.SetKeepOnLine(0));
@@ -66,6 +77,11 @@ public static class MenuBuilder
         Radio(size, T("Small"), s.LineSize == "small", on => app.SetLineSize("small"));
         Radio(size, T("Medium"), s.LineSize == "medium", on => app.SetLineSize("medium"));
         Radio(size, T("Large"), s.LineSize == "large", on => app.SetLineSize("large"));
+
+        // Submenu() adds itself to the menu, so this lands after "Size".
+        var shortcut = Submenu(menu.Items, T("Shortcut"));
+        shortcut.DropDownItems.Add(new Forms.ToolStripMenuItem(app.ShortcutDisplay) { Enabled = false });
+        Add(shortcut.DropDownItems, T("Change Shortcut…"), app.RecordShortcut);
 
         menu.Items.Add(new Forms.ToolStripSeparator());
         Add(menu.Items, T("Open screenshots folder"), app.OpenInboxFolder);

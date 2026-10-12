@@ -48,16 +48,6 @@ public sealed class FlightDirector
         _frames.Start(Tick);
     }
 
-    public void Abort(PeggedItem item)
-    {
-        Flight? flight = _flights.FirstOrDefault(f => f.Item?.Id == item.Id);
-        if (flight is not null)
-        {
-            _flights.Remove(flight);
-            flight.OnLanded?.Invoke();
-        }
-    }
-
     private OverlayWindow EnsureOverlay(MonitorInfo monitor)
     {
         if (_overlay is not null && _overlay.Monitor.Handle == monitor.Handle) return _overlay;

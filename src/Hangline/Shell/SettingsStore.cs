@@ -51,10 +51,6 @@ public sealed class Settings
     public string Language { get; set; } = "auto";
 
     /// Set once the user has been asked whether Hangline should take screenshots.
-    public bool InboxOffered { get; set; }
-
-    public List<string> HiddenFolders { get; set; } = [];
-
     public int? KeepChoice => KeepOnLine is 25 or 50 or 100 ? KeepOnLine : null;
 
     /// An absent shortcut still means Ctrl+Alt+T; only an explicit empty entry

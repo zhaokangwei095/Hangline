@@ -35,11 +35,14 @@ public sealed partial class AppServices
     public void Startup(string[] args)
     {
         Log.Write($"launched: {Environment.ProcessPath} args=[{string.Join("][", args)}]");
-        Tray = new TrayController(this);
-        Tray.Show();
+        // The tray menu reads the hotkey state, so the inputs have to exist
+        // before the menu is built — building it first threw on startup.
         StartupLine();
         StartupInputs();
         ApplyRevealSettings();
+
+        Tray = new TrayController(this);
+        Tray.Show();
         Debug.Handle(args, this);
         Log.Write($"started, config at {Store.FilePath}");
     }
@@ -94,14 +97,14 @@ public sealed partial class AppServices
 
     public void Shutdown()
     {
-        if (LineWindow?.IsVisible == true) Settings.Pegged = Model.PathsToSave().ToList();
+        // The strip window hides itself whenever the line is tucked away, so
+        // visibility says nothing about whether photos are hanging; quitting
+        // right after a hang used to lose it.
+        Settings.Pegged = Model.PathsToSave().ToList();
         Save();
         (Watchers as IDisposable)?.Dispose();
         Clipboards.Dispose();
-        ToggleKey.Dispose();
-        RegionKey.Dispose();
-        FullscreenKey.Dispose();
-        WindowKey.Dispose();
+        Keys.Dispose();
         Sink.Dispose();
         Tray.Dispose();
         LineWindow?.Close();

@@ -27,7 +27,7 @@ public sealed class Passthrough(IntPtr hwnd)
     public void ForceThrough() => Apply(new Dictionary<Guid, Rect>(), Pt.Zero, 1, Pt.Zero, forced: true);
 
     public bool Apply(IReadOnlyDictionary<Guid, Rect> cardRects, Pt cursorPhysical, double scale,
-                      Pt originPhysical, bool forced = false)
+                      Pt originPhysical, bool forced = false, (double Top, double Bottom)? scrollBand = null)
     {
         bool over = false;
         if (!forced && scale > 0)
@@ -41,6 +41,12 @@ public sealed class Passthrough(IntPtr hwnd)
                                       Math.Max(0, rect.Height - 2 * Shrink));
                 if (local.X >= shrunk.X && local.X < shrunk.Right &&
                     local.Y >= shrunk.Y && local.Y < shrunk.Bottom) { over = true; break; }
+            }
+            // A line longer than the screen gives up the whole band it hangs in,
+            // gaps included, so the wheel can move it from anywhere along it.
+            if (!over && scrollBand is { } band)
+            {
+                over = local.Y >= band.Top - Shrink && local.Y <= band.Bottom + Shrink;
             }
         }
 

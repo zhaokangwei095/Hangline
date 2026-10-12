@@ -14,7 +14,10 @@ public static class Gdi
 {
     /// CAPTUREBLT leaves out windows that say they should not be captured —
     /// which is what a protected video player does, and what the line itself is.
-    private const int CaptureBlt = unchecked((int)0x4000_0000);
+    /// Named values, not a hand-rolled int: CopyFromScreen validates the enum and
+    /// rejects the same bits spelled as a number.
+    private static readonly Drawing.CopyPixelOperation WithBlt =
+        Drawing.CopyPixelOperation.SourceCopy | Drawing.CopyPixelOperation.CaptureBlt;
 
     public static byte[]? Capture(Hangline.Core.RectD physical)
     {
@@ -30,8 +33,16 @@ public static class Gdi
             using var bmp = new Drawing.Bitmap(width, height, Imaging.PixelFormat.Format32bppArgb);
             using (var g = Drawing.Graphics.FromImage(bmp))
             {
-                g.CopyFromScreen(x, y, 0, 0, new Drawing.Size(width, height),
-                    (Drawing.CopyPixelOperation)(CaptureBlt | (int)Drawing.CopyPixelOperation.SourceCopy));
+                try
+                {
+                    g.CopyFromScreen(x, y, 0, 0, new Drawing.Size(width, height), WithBlt);
+                }
+                catch (ArgumentException)
+                {
+                    // Some stacks refuse CAPTUREBLT; a plain grab is better than no capture.
+                    g.CopyFromScreen(x, y, 0, 0, new Drawing.Size(width, height),
+                        Drawing.CopyPixelOperation.SourceCopy);
+                }
             }
 
             using var ms = new MemoryStream();

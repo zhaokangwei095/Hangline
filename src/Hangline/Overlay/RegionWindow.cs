@@ -94,10 +94,18 @@ public sealed class RegionWindow : Window
     public static RectD? Select(MonitorInfo monitor)
     {
         var window = new RegionWindow(monitor);
+        Shell.Log.Write($"region: want {window.Left},{window.Top} {window.Width}x{window.Height}");
         bool? ok = window.ShowDialog();
+        Shell.Log.Write($"region closed: result={ok}");
         return ok == true && window._selection.Width > 2 && window._selection.Height > 2
             ? window._selection
             : null;
+    }
+
+    protected override void OnContentRendered(EventArgs e)
+    {
+        Shell.Log.Write($"region rendered: actual {ActualWidth}x{ActualHeight} at {Left},{Top}");
+        base.OnContentRendered(e);
     }
 
     private void OnDown(object sender, MouseButtonEventArgs e)

@@ -51,14 +51,13 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     public static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
 
+    /// Bit 0 says the key went down since the previous call, which is the only
+    /// way a 30 Hz poll can be sure it did not miss a click.
     [DllImport("user32.dll")]
-    public static extern bool ClientToScreen(IntPtr hwnd, ref POINT point);
+    public static extern short GetAsyncKeyState(int virtualKey);
 
-    [DllImport("user32.dll")]
-    public static extern IntPtr WindowFromPoint(POINT point);
-
-    [DllImport("user32.dll")]
-    public static extern IntPtr GetAncestor(IntPtr hwnd, uint flags);
+    public const int VK_LBUTTON = 0x01;
+    public const int VK_RBUTTON = 0x02;
 
     [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
     public static extern IntPtr GetWindowLongPtr(IntPtr hwnd, int index);
@@ -68,9 +67,6 @@ internal static class NativeMethods
 
     [DllImport("user32.dll")]
     public static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint processId);
-
-    [DllImport("user32.dll")]
-    public static extern bool IsWindowVisible(IntPtr hwnd);
 
     [DllImport("user32.dll")]
     public static extern IntPtr GetForegroundWindow();
@@ -102,11 +98,7 @@ internal static class NativeMethods
     }
 
     public const uint MONITOR_DEFAULTTONEAREST = 2;
-    public const uint MONITOR_DEFAULTTOPRIMARY = 1;
     public const int MONITORINFOF_PRIMARY = 1;
-
-    /// GA_ROOTOWNER = 3 — walk up to the frame a tab or dialog belongs to.
-    public const uint GA_ROOTOWNER = 3;
 
     [DllImport("shcore.dll")]
     public static extern int GetDpiForMonitor(IntPtr monitor, int dpiType, out uint dpiX, out uint dpiY);

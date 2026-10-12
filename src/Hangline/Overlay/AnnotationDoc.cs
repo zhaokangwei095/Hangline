@@ -56,12 +56,6 @@ public sealed class AnnotationDoc
 
     public void Add(Stroke stroke) => Strokes.Add(stroke);
 
-    public void ReplaceLast(Stroke stroke)
-    {
-        if (Strokes.Count > 0) Strokes[^1] = stroke;
-        else Strokes.Add(stroke);
-    }
-
     public bool Undo()
     {
         if (!CanUndo) return false;

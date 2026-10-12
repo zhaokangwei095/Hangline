@@ -35,8 +35,11 @@ public sealed class MessageSink : IDisposable
         list.Add(handler);
     }
 
+    private static readonly bool Trace = Environment.GetEnvironmentVariable("HANGLINE_MSGS") == "1";
+
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
+        if (Trace) Shell.Log.Write($"msg 0x{msg:x4} wParam=0x{wParam.ToInt64():x} hwnd=0x{hwnd.ToInt64():x}");
         if (_handlers.TryGetValue((uint)msg, out List<Action<IntPtr, IntPtr>>? list))
         {
             foreach (Action<IntPtr, IntPtr> handler in list)

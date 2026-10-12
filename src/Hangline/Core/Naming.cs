@@ -27,9 +27,6 @@ public static class Naming
             ? $"剪贴板 {local:yyyy-MM-dd} {Meridiem(local, style)}{StampRaw(local, style)}.png"
             : $"Clipboard {local:yyyy-MM-dd} at {local:HH.mm:ss}.png".Replace(":", ".");
 
-    public static string RecordingName(DateTime local, NameStyle style) =>
-        $"{(style.Meridiem ? "录屏" : "Recording")} {local:yyyy-MM-dd}{Stamp(local, style)}.mp4";
-
     /// Chinese style reads "下午3.45.06" — no leading zero on the hour, and
     /// midnight/noon are both 12, not 0.
     private static string Stamp(DateTime local, NameStyle style) =>

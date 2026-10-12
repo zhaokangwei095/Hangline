@@ -32,7 +32,4 @@ public static class WindowStyles
     public static void SetClickThrough(IntPtr hwnd, bool through) =>
         Set(hwnd, through ? NativeMethods.WS_EX_TRANSPARENT : 0,
             through ? 0 : NativeMethods.WS_EX_TRANSPARENT);
-
-    public static bool IsClickThrough(IntPtr hwnd) =>
-        (Get(hwnd) & NativeMethods.WS_EX_TRANSPARENT) != 0;
 }

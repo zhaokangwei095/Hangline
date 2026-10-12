@@ -5,12 +5,6 @@ public static class Ease
 {
     public static double InCubic(double k) => k * k * k;
 
-    public static double OutCubic(double k)
-    {
-        double t = 1 - k;
-        return 1 - t * t * t;
-    }
-
     public static double InOutCubic(double k) => k < 0.5 ? 4 * k * k * k : 1 - Math.Pow(-2 * k + 2, 3) / 2;
 
     public static double InQuad(double k) => k * k;

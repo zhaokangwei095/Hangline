@@ -51,8 +51,8 @@
   <data name="Add Folder…" xml:space="preserve">
     <value>添加文件夹…</value>
   </data>
-  <data name="Stop Watching All" xml:space="preserve">
-    <value>全部停止监听</value>
+  <data name="Stop Watching" xml:space="preserve">
+    <value>停止监听</value>
   </data>
   <data name="Keep on line" xml:space="preserve">
     <value>绳上保留</value>
@@ -176,5 +176,17 @@
   </data>
   <data name="The trim failed; the file is unchanged." xml:space="preserve">
     <value>剪辑失败，文件未改动。</value>
+  </data>
+  <data name="Press the new shortcut" xml:space="preserve">
+    <value>按下新的组合键</value>
+  </data>
+  <data name="Backspace removes it." xml:space="preserve">
+    <value>按退格键清除。</value>
+  </data>
+  <data name="Hold Ctrl, Alt or Shift with it" xml:space="preserve">
+    <value>请同时按住 Ctrl、Alt 或 Shift</value>
+  </data>
+  <data name="{0} is already used by another app" xml:space="preserve">
+    <value>{0} 已被其他程序占用</value>
   </data>
 </root>

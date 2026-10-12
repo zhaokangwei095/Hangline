@@ -79,9 +79,11 @@ public sealed class LineWindow : Window, ILineHost
             Place(MonitorAt(Dpi.CursorPhysical()));
         };
 
-        // Hover is the only pointer state the line has before gestures exist.
         _surface.NeedsFrames += StartFrames;
         _surface.CardCreated += (view, item) => _ = new CardGestures(view, this);
+        // A card marks its own wheel events handled, so what reaches the window
+        // came from a gap.
+        MouseWheel += OnGapWheel;
 
         // A WPF window has no handle until it is shown, but the line must be
         // placed — and therefore measurable — long before the first reveal.
@@ -176,28 +178,6 @@ public sealed class LineWindow : Window, ILineHost
             dip.Value.Height * _scale);
     }
 
-    /// Paint and Photos save over the file without telling us, so the card asks
-    /// the disk until the bytes change, then swaps its own thumbnail in place.
-    public void WatchForEdit(PeggedItem item)
-    {
-        DateTime before = System.IO.File.GetLastWriteTimeUtc(item.Path);
-        var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
-        int tries = 0;
-        timer.Tick += (_, _) =>
-        {
-            if (++tries > 240) { timer.Stop(); return; }
-            try
-            {
-                if (System.IO.File.GetLastWriteTimeUtc(item.Path) == before) return;
-            }
-            catch (IOException) { return; }
-
-            timer.Stop();
-            _model.ReloadThumbnailFor(item.Path);
-        };
-        timer.Start();
-    }
-
     public void ShowAt(double x, double y) => Place(MonitorAt(new Pt(x, y)));
 
     // MARK: - ILineHost
@@ -268,10 +248,20 @@ public sealed class LineWindow : Window, ILineHost
         }
 
         _surface.Resize(monitor.Bounds.Width / _scale, panelHeight);
+        // How many photos fit is a property of this screen, so it is decided
+        // here and nowhere else; the layout and the scroll limit both read it.
+        _model.Visible = Layout.VisibleFits(monitor.Bounds.Width / _scale, _model.Size);
         _motion.PanelHeight = panelHeight;
         _placed = true;
 
-        if (!_model.Revealed) _surface.SetRevealOffset(_motion.RetractedY);
+        if (!_model.Revealed)
+        {
+            // The controller has to agree that the line is tucked away. It
+            // starts at zero, which would make the first reveal of a session
+            // snap down instead of sliding.
+            _motion.SnapTo(_motion.RetractedY);
+            _surface.SetRevealOffset(_motion.RetractedY);
+        }
     }
 
     private RectD WindowRectPhysical() => new(_monitor.Bounds.X, _monitor.Bounds.Y,
@@ -309,6 +299,10 @@ public sealed class LineWindow : Window, ILineHost
                       && cursorPhysical.X >= window.Left && cursorPhysical.X < window.Right;
         bool inside = window.Contains(cursorPhysical);
 
+        // The band is click-through, so no mouse event ever reaches this window
+        // there; sampling the button is the only way to learn about the click.
+        if (inBand && ButtonPressed()) _reveal.ClickedInBand();
+
         _reveal.Tick(_poller.Now, dt, inBand, inside);
 
         if (!_model.Revealed)
@@ -321,18 +315,50 @@ public sealed class LineWindow : Window, ILineHost
         // flipping the window style every frame would flicker.
         bool settled = !_motion.RevealActive && !_motion.Retracting;
 
+        var rects = settled ? _surface.CardRects() : EmptyRects;
+
         if (HitTrace && _poller.Now - _lastTrace > 2)
         {
             _lastTrace = _poller.Now;
-            var rects = _surface.CardRects();
             var first = rects.Count > 0 ? rects.Values.First().ToString() : "none";
             Shell.Log.Write($"hit: revealed={_model.Revealed} settled={settled} rects={rects.Count} " +
                             $"cursor={cursorPhysical.X},{cursorPhysical.Y} scale={_scale} first={first} " +
                             $"through={_passthrough?.IsThrough}");
         }
-        _passthrough?.Apply(settled ? _surface.CardRects() : new Dictionary<Guid, Rect>(),
-                           cursorPhysical, _scale,
-                           new Pt(window.Left, window.Top), forced: !settled);
+        _passthrough?.Apply(rects, cursorPhysical, _scale,
+                           new Pt(window.Left, window.Top), forced: !settled,
+                           scrollBand: _model.Overflows ? Band(rects) : null);
+    }
+
+    private static readonly Dictionary<Guid, Rect> EmptyRects = [];
+
+    /// The vertical extent the photos hang in, in surface coordinates. Only the
+    /// height of it matters: along an overflowing line every gap takes the wheel.
+    private static (double Top, double Bottom)? Band(IReadOnlyDictionary<Guid, Rect> rects)
+    {
+        if (rects.Count == 0) return null;
+        double top = double.MaxValue, bottom = double.MinValue;
+        foreach (Rect r in rects.Values)
+        {
+            top = Math.Min(top, r.Y);
+            bottom = Math.Max(bottom, r.Bottom);
+        }
+        return (top, bottom);
+    }
+
+    /// Bit 0 of GetAsyncKeyState means "went down since the previous call", so
+    /// a click cannot be missed between two polls.
+    private static bool ButtonPressed() =>
+        (NativeMethods.GetAsyncKeyState(NativeMethods.VK_LBUTTON) & 1) != 0 ||
+        (NativeMethods.GetAsyncKeyState(NativeMethods.VK_RBUTTON) & 1) != 0;
+
+    /// Scrolling started in a gap between cards. The cards handle their own
+    /// wheel events and mark them handled, so this only sees the gaps.
+    private void OnGapWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+    {
+        if (!_model.Overflows) return;
+        _model.ScrollBy(e.Delta < 0 ? 12 : -12);
+        e.Handled = true;
     }
 
     private void StartFrames()

@@ -122,17 +122,7 @@ public static class Layout
     public static double EdgeFade(double x, double width) =>
         Math.Min(1, Math.Max(0, Math.Min(x, width - x) / EdgeFadeBand));
 
-    /// The whole hanging view (pin + card) is this tall; its top sits
-    /// `pinAbove` above the rope, so it pivots at the pin.
-    public static double HangingHeight(double ropeY, double panelHeight) => panelHeight - ropeY;
-
     public static double PinTopY(double ropeY) => ropeY - PinAbove;
-
-    public static double CardTopY(double ropeY) => PinTopY(ropeY) + CardOffsetBelowTop;
-
-    /// Centre of the hanging view, which is how the original positions it.
-    public static double HangingCenterY(double ropeY, double panelHeight) =>
-        ropeY - PinAbove + (panelHeight - ropeY) / 2;
 
     /// The photo fits inside the card area keeping its proportions, so the
     /// white border hugs it whether the screenshot is wide or tall.

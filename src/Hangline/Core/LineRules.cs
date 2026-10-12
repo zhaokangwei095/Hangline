@@ -74,8 +74,14 @@ public static class LineRules
         return Math.Min(most, Math.Max(0, scroll));
     }
 
-    public static bool ShouldScroll(IReadOnlyList<PeggedItem> items, int visible) =>
-        items.Count(i => !i.IsFalling) > visible;
+    /// <summary>
+    /// Whether the strip between cards should also accept the pointer. Upstream
+    /// does it when the line holds more than fit, so a wheel gesture anywhere
+    /// along the line moves it; with "as many as fit" there is nothing to move
+    /// and the gaps must stay click-through.
+    /// </summary>
+    public static bool ScrollBandTakesPointer(int count, int visible, int? keepOnLine) =>
+        keepOnLine is not null && count > visible;
 
     /// Everything comes back as it was. This runs before the line knows its
     /// screen, so capacity must not be applied here — otherwise photos fall

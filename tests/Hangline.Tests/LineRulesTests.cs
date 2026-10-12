@@ -102,6 +102,17 @@ public class LineRulesTests
         Assert.Equal(0, LineRules.ClampScroll(500, 5, 8, 174), 1);
 
     [Fact]
+    public void Gaps_take_the_pointer_only_when_there_is_somewhere_to_scroll()
+    {
+        // Keep on line set and more photos than fit: a wheel gesture anywhere
+        // along the line moves it, gaps included.
+        Assert.True(LineRules.ScrollBandTakesPointer(count: 30, visible: 8, keepOnLine: 50));
+        // "As many as fit" never overflows, so the gaps stay click-through.
+        Assert.False(LineRules.ScrollBandTakesPointer(count: 30, visible: 8, keepOnLine: null));
+        Assert.False(LineRules.ScrollBandTakesPointer(count: 6, visible: 8, keepOnLine: 50));
+    }
+
+    [Fact]
     public void Restoring_skips_missing_files_and_duplicates_but_not_capacity()
     {
         string[] stored =

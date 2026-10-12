@@ -32,15 +32,6 @@ public static class Dpi
         return dpi <= 0 ? 1 : dpi / Base;
     }
 
-    public static Pt PhysicalToLogical(Pt physical, double scale) => new(physical.X / scale, physical.Y / scale);
-
-    public static Pt LogicalToPhysical(Pt logical, double scale, Pt originPhysical) =>
-        new(Math.Round(originPhysical.X + logical.X * scale), Math.Round(originPhysical.Y + logical.Y * scale));
-
-    /// The origin a window's logical (0,0) sits at, given where the window was placed.
-    public static Pt LogicalToScreen(Pt logical, double scale, Pt windowOriginPhysical) =>
-        new(windowOriginPhysical.X + logical.X * scale, windowOriginPhysical.Y + logical.Y * scale);
-
     public static Pt CursorPhysical()
     {
         NativeMethods.GetCursorPos(out NativeMethods.POINT p);
@@ -90,11 +81,4 @@ public static class Dpi
         }
         return null;
     }
-
-    /// The work area in DIPs, which is what the line lays itself out against.
-    public static Rect WorkAreaDips(MonitorInfo monitor) => new(
-        (monitor.WorkArea.X - monitor.Bounds.X) / monitor.Scale,
-        (monitor.WorkArea.Y - monitor.Bounds.Y) / monitor.Scale,
-        monitor.WorkArea.Width / monitor.Scale,
-        monitor.WorkArea.Height / monitor.Scale);
 }

@@ -15,10 +15,7 @@ namespace Hangline.Shell;
 public sealed partial class AppServices
 {
     public MessageSink Sink { get; private set; } = null!;
-    public HotKey ToggleKey { get; private set; } = null!;
-    public HotKey RegionKey { get; private set; } = null!;
-    public HotKey FullscreenKey { get; private set; } = null!;
-    public HotKey WindowKey { get; private set; } = null!;
+    public HotKeyManager Keys { get; private set; } = null!;
     public ClipboardWatcher Clipboards { get; private set; } = null!;
 
     /// Shift joins in because Ctrl+Alt+A is already WeChat's screenshot key on
@@ -33,22 +30,13 @@ public sealed partial class AppServices
     private void StartupInputs()
     {
         Sink = new MessageSink();
+        Keys = new HotKeyManager(Sink);
 
-        ToggleKey = new HotKey(Sink);
-        ToggleKey.Pressed += () => Line?.Toggle();
-        ToggleKey.TryRegister(Settings.ToShortcut());
-
-        RegionKey = new HotKey(Sink);
-        RegionKey.Pressed += CaptureRegion;
-        RegionKey.TryRegister(RegionDefault);
-
-        FullscreenKey = new HotKey(Sink);
-        FullscreenKey.Pressed += CaptureFullscreen;
-        FullscreenKey.TryRegister(FullscreenDefault);
-
-        WindowKey = new HotKey(Sink);
-        WindowKey.Pressed += CaptureWindow;
-        WindowKey.TryRegister(WindowDefault);
+        Keys.TryBind(Toggle, Settings.ToShortcut(), () => Line?.Toggle());
+        Keys.TryBind(Region, RegionDefault, CaptureRegion);
+        Keys.TryBind(Fullscreen, FullscreenDefault, CaptureFullscreen);
+        Keys.TryBind(Window, WindowDefault, CaptureWindow);
+        ApplySnapshotKey();
 
         Clipboards = new ClipboardWatcher(Sink);
         Clipboards.ImageCopied += path => HangFile(path);
@@ -100,6 +88,52 @@ public sealed partial class AppServices
         Capturer.Result? shot = Capturer.Region(selection.Value);
         if (shot is not null) HangFile(shot.Value.Path, shot.Value.Captured);
     }
+
+    public const string Toggle = "toggle";
+    public const string Region = "region";
+    public const string Fullscreen = "fullscreen";
+    public const string Window = "window";
+    public const string Snapshot = "snapshot";
+
+    /// Taking Print Screen over is the Windows equivalent of the original
+    /// rewriting the system screenshot preferences: the same key, but the shot
+    /// lands on the line instead of the desktop. Releasing it is a single
+    /// UnregisterHotKey, and unlike a registry edit it cannot be left behind.
+    public void ApplySnapshotKey()
+    {
+        if (Settings.InboxEnabled)
+        {
+            if (!Keys.TryBind(Snapshot, Shortcut.PrintScreen, CaptureRegion))
+                Log.Write("Print Screen is held by another app; the rest of takeover still works");
+        }
+        else
+        {
+            Keys.Unbind(Snapshot);
+        }
+    }
+
+    /// Re-bind a named shortcut, keeping the old one if Windows refuses the new.
+    public bool Rebind(string name, Shortcut shortcut)
+    {
+        Shortcut fallback = Keys.Current(name);
+        if (!Keys.TryBind(name, shortcut, HandlerFor(name)))
+        {
+            Keys.TryBind(name, fallback, HandlerFor(name));
+            return false;
+        }
+        if (name == Toggle) { Settings.SetShortcut(shortcut); Save(); }
+        return true;
+    }
+
+    private Action HandlerFor(string name) => name switch
+    {
+        Toggle => () => Line?.Toggle(),
+        Region => CaptureRegion,
+        Fullscreen => CaptureFullscreen,
+        Window => CaptureWindow,
+        Snapshot => CaptureRegion,
+        _ => () => { },
+    };
 
     public void ApplyRevealSettings()
     {

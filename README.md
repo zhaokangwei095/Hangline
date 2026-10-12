@@ -45,7 +45,7 @@ scripts/install-sdk.ps1   # 装 .NET 8 SDK 到用户目录，不需要管理员
 scripts/dev.ps1           # 编译并启动
 scripts/publish.ps1       # 产出 publish\Hangline\ 便携目录
 scripts/publish.ps1 -SingleFile   # 单文件变体，见下表
-dotnet test               # 95 个单元测试
+dotnet test               # 108 个单元测试
 ```
 
 两种交付形态都实测过（这台机器，冷启动到绳子窗口出现，含 0.5 秒轮询粒度）：

@@ -21,10 +21,15 @@ public sealed class LineModel
     public int Visible { get; set; } = Layout.DefaultMaxItems;
 
     /// What the line holds, which may be more than fits when Keep on line is set.
-    public int MaxItems { get; set; } = Layout.DefaultMaxItems;
+    /// Derived so it can never disagree with the screen it was placed on.
+    public int MaxItems => Math.Max(Visible, KeepOnLine ?? Visible);
 
     /// How far the line is scrolled towards older photos; 0 shows the newest.
     public double Scroll { get; set; }
+
+    /// More photos than fit across the screen, so there is somewhere to scroll
+    /// to and the gaps between cards take the pointer as well.
+    public bool Overflows => LineRules.ScrollBandTakesPointer(_items.Count, Visible, KeepOnLine);
 
     public bool Revealed { get; set; }
     public bool SoundOn { get; set; } = true;
