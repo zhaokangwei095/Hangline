@@ -77,7 +77,6 @@ public sealed partial class AppServices
 
     public void CaptureFullscreen()
     {
-        if (!Settings.InboxEnabled) { Log.Write("capture skipped: inbox off"); }
         Capturer.Result? shot = Capturer.Fullscreen();
         if (shot is not null) HangFile(shot.Value.Path, shot.Value.Captured);
     }

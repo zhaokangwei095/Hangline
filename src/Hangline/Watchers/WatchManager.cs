@@ -29,17 +29,22 @@ public sealed class WatchManager : IWatchers, IDisposable
 
         Add(Inbox.Folder, anyImage: true, recordings: true);
 
-        if (_app.Settings.WatchPicturesFolder)
+        // "Handle screenshots" is what pulls the system's own screenshot folders
+        // in; with it off, only Hangline's inbox and the folders the user added
+        // are watched, and nothing else of theirs is read.
+        bool system = _app.Settings.InboxEnabled;
+
+        if (system && _app.Settings.WatchPicturesFolder)
         {
             Add(Special(Environment.SpecialFolder.MyPictures, "Screenshots"), anyImage: false, recordings: false);
             // Windows writes some captures straight into Pictures.
             Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)), anyImage: false, recordings: false);
         }
 
-        if (_app.Settings.WatchCaptures)
+        if (system && _app.Settings.WatchCaptures)
             Add(Special(Environment.SpecialFolder.MyVideos, "Captures"), anyImage: false, recordings: true);
 
-        if (_app.Settings.WatchDesktop)
+        if (system && _app.Settings.WatchDesktop)
             Add(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), anyImage: false, recordings: false);
 
         foreach (string extra in _app.Settings.ExtraFolders)

@@ -22,6 +22,7 @@ public sealed partial class AppServices
     {
         Settings.InboxEnabled = on;
         Save();
+        Watchers?.Apply();
     }
 
     /// The three "when to bring the line down" switches all land here.
