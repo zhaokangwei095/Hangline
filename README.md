@@ -41,8 +41,20 @@ Windows 版，免安装：整个文件夹拷到任何一台 Windows 10 / 11 上�
 scripts/install-sdk.ps1   # 装 .NET 8 SDK 到用户目录，不需要管理员
 scripts/dev.ps1           # 编译并启动
 scripts/publish.ps1       # 产出 publish\Hangline\ 便携目录
-dotnet test               # 89 个单元测试
+scripts/publish.ps1 -SingleFile   # 单文件变体，见下表
+dotnet test               # 95 个单元测试
 ```
+
+两种交付形态都实测过（这台机器，冷启动到绳子窗口出现，含 0.5 秒轮询粒度）：
+
+| | 体积 | 文件数 | 启动 |
+|:--|:--|:--|:--|
+| `publish\Hangline\` 便携目录 | 202 MB | 244 | 4.3 s |
+| `publish-singlefile\Hangline.exe` | 220.9 MB | 1 | 4.9 s |
+
+单文件**更大也更慢**：WPF 的原生 dll 无法打包进单文件，每次启动都要先解包到
+`%TEMP%\.net`。所以默认交付是便携目录——整坨拷走就行，还少一次解包。单文件留着
+是给"只能传一个文件"的场合用的。
 
 必须用 `Hangline.exe` 启动，不要用 `dotnet Hangline.dll`：进程的 DPI 感知度取自
 exe 的 manifest，走 dotnet 宿主时监视器尺寸会被系统按缩放比例虚拟化，量出来全是错的。
