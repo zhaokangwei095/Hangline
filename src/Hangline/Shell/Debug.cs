@@ -85,6 +85,26 @@ public static class Debug
                     AnnotateSelfTest(args[++i]);
                     break;
 
+                // Spike: can the OS trim a recording at all, from an unpackaged
+                // .NET 8 WPF app? Answer this before building a UI on top of it.
+                case "--trim-test" when i + 2 < args.Length:
+                {
+                    string clip = args[++i];
+                    int seconds = int.Parse(args[++i]);
+                    _ = System.Threading.Tasks.Task.Run(async () =>
+                    {
+                        bool ok = await Line.Trimmer.TryTrim(clip, TimeSpan.Zero, TimeSpan.FromSeconds(seconds));
+                        Log.Write(ok
+                            ? $"TRIM ok via ffmpeg, {new System.IO.FileInfo(clip).Length} bytes"
+                            : $"TRIM unavailable (ffmpeg found: {Line.Trimmer.Find() is not null})");
+                    });
+                    break;
+                }
+
+                case "--trim-window" when i + 1 < args.Length:
+                    new Overlay.TrimWindow(args[++i]).Show();
+                    break;
+
                 case "--size" when i + 1 < args.Length:
                     app.SetLineSize(args[++i]);
                     break;

@@ -61,6 +61,20 @@ Windows 没有等价 API：任何外部编辑器都不会通知你。
 「在画图里打开」仍然保留为兜底；`Actions.Annotate` 里如果编辑器构造失败会自动
 退回它，而不是让长按这个手势哑掉。
 
+### 录屏剪辑：换成了 ffmpeg，因为系统 API 够不到
+
+原计划用 Windows 自带的 `Windows.Media.Edit.VideoEditingService`（照片应用背后的
+那个裁剪服务，`Auto` 档免重编码）来对应原作的
+`AVAssetExportSession(Passthrough)`。
+
+**实测结论：这个 API 从 .NET 8 WPF 里调不到。** `Windows.Media.Edit` 不在 .NET
+为 WinRT 生成的投影命名空间里，把目标版本从 `10.0.19041` 提到 `10.0.22621` 也一样。
+
+所以改成：探测系统里已有的 ffmpeg，用 `-ss/-to -i … -c copy` 做同样的免重编码流拷贝；
+**绝不捆绑、也不下载**。这台机器实测把一段 672MB 的录屏裁成 3.08 秒 / 6.5MB。
+探测不到 ffmpeg 时，剪辑窗口会明说"这台电脑上没有 ffmpeg，剪不了这段"，并把按钮
+变成「打开」交给系统播放器——而不是假装保存成功了。
+
 ## 适配（Windows 上本来就没有对应物）
 
 | 原版 | 这里 |

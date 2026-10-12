@@ -165,4 +165,16 @@
   <data name="Cancel" xml:space="preserve">
     <value>取消</value>
   </data>
+  <data name="From" xml:space="preserve">
+    <value>起</value>
+  </data>
+  <data name="To" xml:space="preserve">
+    <value>止</value>
+  </data>
+  <data name="No ffmpeg on this PC, so the clip cannot be cut here." xml:space="preserve">
+    <value>这台电脑上没有 ffmpeg，剪不了这段；可以打开来看。</value>
+  </data>
+  <data name="The trim failed; the file is unchanged." xml:space="preserve">
+    <value>剪辑失败，文件未改动。</value>
+  </data>
 </root>

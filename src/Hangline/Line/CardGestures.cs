@@ -138,7 +138,8 @@ public sealed class CardGestures
     /// Paint, and the card refreshes itself when the file changes on disk.
     private void OnLongPress()
     {
-        Actions.Annotate(Item, path => _model.ReloadThumbnailFor(path));
+        if (Item.IsRecording) Actions.Trim(Item, path => _model.ReloadThumbnailFor(path));
+        else Actions.Annotate(Item, path => _model.ReloadThumbnailFor(path));
     }
 
     /// Dragging out is done by the shell: dropping on a folder moves the file,

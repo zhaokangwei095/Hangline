@@ -166,4 +166,16 @@
   <data name="Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="From" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="To" xml:space="preserve">
+    <value>To</value>
+  </data>
+  <data name="No ffmpeg on this PC, so the clip cannot be cut here." xml:space="preserve">
+    <value>No ffmpeg on this PC, so the clip cannot be cut here.</value>
+  </data>
+  <data name="The trim failed; the file is unchanged." xml:space="preserve">
+    <value>The trim failed; the file is unchanged.</value>
+  </data>
 </root>

@@ -60,6 +60,28 @@ public static class Actions
         Overlay.PreviewHost.Show(live, Math.Max(0, at));
     }
 
+    /// Hold a recording: cut it down. The card swaps its first frame afterwards,
+    /// so the line shows what the clip is now rather than what it used to be.
+    public static void Trim(PeggedItem item, Action<string> onSaved)
+    {
+        try
+        {
+            var window = new Overlay.TrimWindow(item.Path);
+            window.Closed += (_, _) =>
+            {
+                if (window.Saved) onSaved(item.Path);
+            };
+            window.Show();
+        }
+        catch (Exception ex)
+        {
+            Log.Error("trim window", ex);
+            Open(item);
+        }
+    }
+
+    public static void OpenPath(string path) => Start(path, null);
+
     /// Hold a photo: mark it up here, and the card swaps its picture in place
     /// when the edit is saved.
     public static void Annotate(PeggedItem item, Action<string> onSaved)
