@@ -12,18 +12,27 @@ public sealed class SystemScheduler : IScheduler
     public IDisposable Schedule(TimeSpan delay, Action action)
     {
         var cts = new CancellationTokenSource();
-        Task.Run(async () =>
+        // Take the token now: the handle may be cancelled and disposed by the
+        // caller at any moment, and a task that reads cts.Token afterwards would
+        // throw ObjectDisposedException on the thread pool.
+        var token = cts.Token;
+        _ = Task.Run(async () =>
         {
-            try { await Task.Delay(delay, cts.Token).ConfigureAwait(false); }
-            catch (TaskCanceledException) { return; }
-            if (!cts.IsCancellationRequested) action();
-        }, cts.Token);
+            try { await Task.Delay(delay, token).ConfigureAwait(false); }
+            catch (OperationCanceledException) { return; }
+            if (!token.IsCancellationRequested) action();
+        }, token);
         return new Cancel(cts);
     }
 
     private sealed class Cancel(CancellationTokenSource cts) : IDisposable
     {
-        public void Dispose() { cts.Cancel(); cts.Dispose(); }
+        public void Dispose()
+        {
+            try { cts.Cancel(); }
+            catch (ObjectDisposedException) { }
+            cts.Dispose();
+        }
     }
 }
 

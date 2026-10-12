@@ -64,10 +64,13 @@ public sealed partial class AppServices
 
     public PeggedItem? HangFile(string path, RectD? captured = null)
     {
-        PeggedItem? item = Model.Hang(path, quietly: Settings.QuietHang);
+        PeggedItem? item = Model.Hang(path, flying: true, quietly: Settings.QuietHang, captured: captured);
         if (item is null) return null;
-        item.CaptureRect = captured;
+
+        // The line has to be down before anything can fly onto it, so the peek
+        // comes first and the flight second.
         LineWindow?.Peek();
+        LineWindow?.FlyIn(item);
         Tray.RebuildMenu();
         return item;
     }

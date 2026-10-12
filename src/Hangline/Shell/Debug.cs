@@ -26,10 +26,26 @@ public static class Debug
                     if (app.LineWindow is { } pinned) pinned.PinLine(true);
                     break;
 
+                // --hang path            hangs a file in place
+                // --hang path@x,y,w,h    also says where it was captured, so it flies in
                 case "--hang" when i + 1 < args.Length:
-                    app.Model.Hang(args[++i]);
-                    app.LineWindow?.Peek();
+                {
+                    string spec = args[++i];
+                    RectD? captured = null;
+                    int at = spec.LastIndexOf('@');
+                    if (at > 0)
+                    {
+                        string[] dims = spec[(at + 1)..].Split(',');
+                        if (dims.Length == 4 && dims.All(d => int.TryParse(d, out _)))
+                        {
+                            captured = new RectD(int.Parse(dims[0]), int.Parse(dims[1]),
+                                                 int.Parse(dims[2]), int.Parse(dims[3]));
+                        }
+                        spec = spec[..at];
+                    }
+                    app.HangFile(spec, captured);
                     break;
+                }
 
                 case "--cursor" when i + 1 < args.Length:
                     // x,y in physical pixels

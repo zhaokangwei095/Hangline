@@ -65,11 +65,18 @@ public sealed class LineModel
 
     /// <summary>Put a file on the line. Returns null if it was already there or
     /// its pixels could not be decoded.</summary>
-    public PeggedItem? Hang(string path, bool flying = false, bool quietly = false)
+    /// <param name="captured">Where it was captured on screen. A capture that
+    /// knows its origin flies in from there; anything else simply appears.</param>
+    public PeggedItem? Hang(string path, bool flying = false, bool quietly = false, RectD? captured = null)
     {
         if (LineRules.AlreadyHung(_items, path)) return null;
 
-        var item = new PeggedItem { Path = path, IsFlying = flying };
+        var item = new PeggedItem
+        {
+            Path = path,
+            IsFlying = flying && captured is not null,
+            CaptureRect = captured,
+        };
         if (!Read(item)) return null;
 
         _items.Add(item);

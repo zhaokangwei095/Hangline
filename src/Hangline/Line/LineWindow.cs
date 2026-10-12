@@ -6,6 +6,7 @@ using System.Windows.Media;
 using Hangline.Core;
 using Hangline.Input;
 using Hangline.Interop;
+using Hangline.Overlay;
 using Hangline.Shell;
 
 namespace Hangline.Line;
@@ -33,6 +34,7 @@ public sealed class LineWindow : Window, ILineHost
     private readonly CursorPoller _poller = new();
     private readonly RevealController _reveal = new();
     private readonly StopwatchTimer _frames = new();
+    private readonly FlightDirector _flights = new();
     private readonly DispatcherTimer _breeze = new();
 
     private Passthrough? _passthrough;
@@ -66,7 +68,7 @@ public sealed class LineWindow : Window, ILineHost
         _reveal.LiveCount = () => _model.LiveCount;
         _poller.Ticked += OnPoll;
 
-        _model.Falling += item => _motion.Forget(item.Id);
+        _model.Falling += OnFalling;
 
         SourceInitialized += (_, _) =>
         {
@@ -117,8 +119,61 @@ public sealed class LineWindow : Window, ILineHost
 
     public void RefreshAfterGesture()
     {
+        _surface.ApplyMotions();
         _surface.InvalidateVisual();
         StartFrames();
+    }
+
+    /// A capture that knows where it was cut from flies from there to its slot;
+    /// anything else simply appears on the line.
+    public void FlyIn(PeggedItem item)
+    {
+        if (item.CaptureRect is not { } from || !_flights.CanFly || !_model.Revealed)
+        {
+            Land(item);
+            return;
+        }
+
+        RectD? target = CardRectPhysical(item.Id);
+        if (target is null)
+        {
+            Land(item);
+            return;
+        }
+
+        _flights.Start(_monitor, from, target.Value, item, item.Tilt, falling: false, () => Land(item));
+    }
+
+    private void Land(PeggedItem item)
+    {
+        _model.Land(item.Id);
+        _motion.SkipArrival(item.Id);
+        _motion.Nudge(item.Id, 2.2);
+        StartFrames();
+    }
+
+    /// The fall is drawn across the whole screen: a card dropped inside the strip
+    /// would be cut off after 210 points instead of completing its 520.
+    private void OnFalling(PeggedItem item)
+    {
+        _motion.Forget(item.Id);
+
+        if (!_model.Revealed || CardRectPhysical(item.Id) is not { } rect) return;
+
+        var copy = new PeggedItem { Path = item.Path, Thumb = item.Thumb, NaturalSize = item.NaturalSize };
+        _flights.Start(_monitor, rect, rect, copy, item.Tilt, falling: true);
+    }
+
+    /// A card's clickable area in screen pixels, for the overlay to aim at.
+    public RectD? CardRectPhysical(Guid id)
+    {
+        Rect? dip = _surface.CardRect(id);
+        if (dip is null) return null;
+        return new RectD(
+            _monitor.Bounds.X + dip.Value.X * _scale,
+            _monitor.Bounds.Y + dip.Value.Y * _scale,
+            dip.Value.Width * _scale,
+            dip.Value.Height * _scale);
     }
 
     /// Paint and Photos save over the file without telling us, so the card asks
@@ -305,6 +360,7 @@ public sealed class LineWindow : Window, ILineHost
     {
         _poller.Stop();
         _frames.Stop();
+        _flights.Dispose();
         base.OnClosed(e);
     }
 
