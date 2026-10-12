@@ -5,3 +5,6 @@ _shots/
 *.user
 .vs/
 _ref_tendedero/
+
+# 视觉伴侣原型的临时目录
+.superpowers/

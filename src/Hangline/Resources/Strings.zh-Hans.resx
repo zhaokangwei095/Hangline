@@ -15,8 +15,11 @@
   <data name="Show line" xml:space="preserve">
     <value>把绳子放下来</value>
   </data>
-  <data name="Hide line" xml:space="preserve">
-    <value>把绳子收起来</value>
+  <data name="Line is down" xml:space="preserve">
+    <value>绳子放下</value>
+  </data>
+  <data name="Show or hide the line; the shortcut does the same" xml:space="preserve">
+    <value>显示或隐藏绳子；也可以用快捷键切换</value>
   </data>
   <data name="Take everything down" xml:space="preserve">
     <value>全部取下</value>
@@ -188,5 +191,86 @@
   </data>
   <data name="{0} is already used by another app" xml:space="preserve">
     <value>{0} 已被其他程序占用</value>
+  </data>
+  <data name="Hangline Settings" xml:space="preserve">
+    <value>Hangline 设置</value>
+  </data>
+  <data name="General" xml:space="preserve">
+    <value>常规</value>
+  </data>
+  <data name="Shortcuts" xml:space="preserve">
+    <value>快捷键</value>
+  </data>
+  <data name="The line" xml:space="preserve">
+    <value>绳子</value>
+  </data>
+  <data name="Show or hide the line" xml:space="preserve">
+    <value>显示或隐藏绳子</value>
+  </data>
+  <data name="Photos in Hangline's folder go to the Recycle Bin; others are only taken off the line" xml:space="preserve">
+    <value>在 Hangline 文件夹里的图会进回收站；别处的只是从绳上取下</value>
+  </data>
+  <data name="Where screenshots come from" xml:space="preserve">
+    <value>截图从哪里来</value>
+  </data>
+  <data name="Takes over the Print Screen key and reads the folders Windows saves screenshots to" xml:space="preserve">
+    <value>接管 PrtSc 键，并读取 Windows 保存截图的那些文件夹</value>
+  </data>
+  <data name="How much hangs" xml:space="preserve">
+    <value>绳上挂多少</value>
+  </data>
+  <data name="More than fit are reached with the mouse wheel" xml:space="preserve">
+    <value>超过一屏的部分用滚轮看</value>
+  </data>
+  <data name="Only the photos and the room they take change" xml:space="preserve">
+    <value>只改照片和它们占的地方</value>
+  </data>
+  <data name="The app" xml:space="preserve">
+    <value>程序</value>
+  </data>
+  <data name="Where Hangline's own captures land" xml:space="preserve">
+    <value>Hangline 自己截的图落在这里</value>
+  </data>
+  <data name="Settings…" xml:space="preserve">
+    <value>设置…</value>
+  </data>
+  <data name="Press a combination in the recorder. PrtSc and the F keys may stand alone; anything else needs Ctrl, Alt or Shift, or it would swallow your typing." xml:space="preserve">
+    <value>在录制框里按一组新键。PrtSc 和 F 键可以单独用，其余必须带 Ctrl、Alt 或 Shift，否则会吞掉你正常打字。</value>
+  </data>
+  <data name="Screenshots Hangline takes" xml:space="preserve">
+    <value>Hangline 自己截图</value>
+  </data>
+  <data name="Print Screen" xml:space="preserve">
+    <value>PrtSc 键</value>
+  </data>
+  <data name="While this is on, Hangline registers the Print Screen key and a press starts a region capture" xml:space="preserve">
+    <value>开着时 Hangline 会注册 PrtSc 键，按一下就开始拖框</value>
+  </data>
+  <data name="Change…" xml:space="preserve">
+    <value>更改…</value>
+  </data>
+  <data name="Back to default" xml:space="preserve">
+    <value>恢复默认</value>
+  </data>
+  <data name="Print Screen is left to Windows." xml:space="preserve">
+    <value>PrtSc 键交还给系统。</value>
+  </data>
+  <data name="Print Screen is ours: press it and drag out a region." xml:space="preserve">
+    <value>PrtSc 已经归 Hangline：按一下就能拖框。</value>
+  </data>
+  <data name="Something else already holds Print Screen, so that key is not ours. Everything else about takeover works." xml:space="preserve">
+    <value>PrtSc 被别的程序先占了，这个键不在我们手里；接管截图的其余部分照常工作。</value>
+  </data>
+  <data name="Take down now" xml:space="preserve">
+    <value>现在取下</value>
+  </data>
+  <data name="Region capture" xml:space="preserve">
+    <value>区域截图</value>
+  </data>
+  <data name="Full-screen capture" xml:space="preserve">
+    <value>全屏截图</value>
+  </data>
+  <data name="Active window" xml:space="preserve">
+    <value>当前窗口</value>
   </data>
 </root>

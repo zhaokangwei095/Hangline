@@ -190,7 +190,29 @@ public sealed class LineWindow : Window, ILineHost
 
     public void Peek() => _reveal.Peek(_poller.Now);
 
-    public void TakeEverythingDown() => _model.TakeEverythingDown();
+    /// <summary>
+    /// Taking everything down has to be seen. The tray item is clicked with the
+    /// pointer down at the icon, so by then the line has tucked itself away —
+    /// and a photo falling while the line is up is not drawn at all. Bring the
+    /// line first, hold it open for the whole cascade, then let it go back.
+    /// </summary>
+    public void TakeEverythingDown()
+    {
+        int count = _model.LiveCount;
+        if (count == 0) return;
+
+        bool wasDown = _model.Revealed;
+        if (!wasDown) Reveal();
+        _reveal.HoldOpen = true;
+        Shell.Log.Write($"take all down: {count} photos, line was {(wasDown ? "down" : "up")}");
+
+        Action<double, Action> after = _model.Delay ?? ((_, run) => run());
+        after(wasDown ? 0 : 0.5, () =>
+        {
+            _model.TakeEverythingDown();
+            after(0.06 * count + 0.75, () => _reveal.Release());
+        });
+    }
 
     /// A development handle: hold the line down so it can be looked at.
     public void PinLine(bool on)
@@ -285,6 +307,9 @@ public sealed class LineWindow : Window, ILineHost
         }
         else
         {
+            // The pointer is usually long gone by the time the line tucks up,
+            // and no MouseLeave arrives for a window that hides itself.
+            _motion.ClearHovers();
             _motion.Retract();
             StartFrames();
         }

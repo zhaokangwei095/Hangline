@@ -21,6 +21,12 @@ public sealed class TrayController : IDisposable
         // A truncated tip is how Windows shows a long one; keep it short.
         _icon.Text = "Hangline";
         _icon.ContextMenuStrip = MenuBuilder.Build(_app);
+        // NotifyIcon never raises the menu's Opening event, so the refresh has
+        // to hang off the press — the shell shows the menu after this one.
+        _icon.MouseDown += (_, e) =>
+        {
+            if (e.Button == Forms.MouseButtons.Right) RebuildMenu();
+        };
         _icon.DoubleClick += (_, _) => _app.ToggleLine();
         _icon.Visible = true;
     }
@@ -34,8 +40,14 @@ public sealed class TrayController : IDisposable
         previous?.Dispose();
     }
 
-    /// The menu reflects live state (how many photos hang), so rebuild it on open.
-    public void RebuildMenu() => _icon.ContextMenuStrip = MenuBuilder.Build(_app);
+    /// Refilled in place rather than replaced: the menu reflects live state
+    /// (whether the line is down, how many photos hang), and a new instance per
+    /// open would either leak the old one or dispose one mid-click.
+    public void RebuildMenu()
+    {
+        if (_icon.ContextMenuStrip is { } menu) MenuBuilder.Populate(menu, _app);
+        else _icon.ContextMenuStrip = MenuBuilder.Build(_app);
+    }
 
     public void Dispose()
     {

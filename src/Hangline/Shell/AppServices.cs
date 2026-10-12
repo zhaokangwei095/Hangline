@@ -79,6 +79,8 @@ public sealed partial class AppServices
     /// dragged; once a second is enough.
     private DispatcherTimer? _saveTimer;
 
+    private SettingsWindow? _settings;
+
     private void QueueSave()
     {
         _saveTimer ??= new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };

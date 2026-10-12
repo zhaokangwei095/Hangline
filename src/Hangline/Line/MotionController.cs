@@ -24,6 +24,11 @@ public sealed class CardMotion
     public bool Hovered;
     public bool Pressed;
 
+    /// 0..1 progress of the corner badge's fade, advanced over BadgeFade and
+    /// eased by the view. It is a number here rather than a WPF animation so
+    /// the frame loop can tell that it still has work to do.
+    public double Badge;
+
     /// A nudge runs in two beats, as in the original: ease out to the angle,
     /// then a spring home.
     public double NudgeTarget;
@@ -47,6 +52,11 @@ public sealed class CardMotion
 public sealed class MotionController
 {
     private const double NudgeRise = 0.3;
+
+    /// How long the corner badge takes to fade and pop in. The original uses
+    /// 0.18 s; a real pointer on this screen read that as a flicker, so the
+    /// prototype settled on 0.26 s.
+    private const double BadgeFade = 0.26;
 
     private double _revealY;
     private double _revealVel;
@@ -233,8 +243,24 @@ public sealed class MotionController
                 if (!Spring.IsSettled(m.Scale, m.ScaleVel, target, 0.0005, 0.01)) busy = true;
                 else { m.Scale = target; m.ScaleVel = 0; }
             }
+
+            double badgeTo = m.Hovered ? 1 : 0;
+            if (m.Badge != badgeTo)
+            {
+                double step = dt / BadgeFade;
+                m.Badge = badgeTo > m.Badge ? System.Math.Min(1, m.Badge + step) : System.Math.Max(0, m.Badge - step);
+                busy = true;
+            }
         }
 
         return busy;
+    }
+
+    /// The pointer can leave without a MouseLeave when the line hides itself,
+    /// so hover has to be dropped explicitly or a badge keeps fading in on a
+    /// card nobody is pointing at.
+    public void ClearHovers()
+    {
+        foreach (CardMotion m in _cards.Values) m.Hovered = false;
     }
 }

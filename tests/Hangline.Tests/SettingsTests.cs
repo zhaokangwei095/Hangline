@@ -41,6 +41,40 @@ public class SettingsTests : IDisposable
     }
 
     [Fact]
+    public void Capture_shortcuts_round_trip_and_a_file_without_them_still_loads()
+    {
+        var store = new SettingsStore(_dir);
+        Settings s = store.Load();
+        s.RegionShortcut = Settings.ToSettings(
+            new Shortcut(0x41, HotKeyModifiers.Control | HotKeyModifiers.Alt, "A"));
+        s.WindowShortcut = Settings.ToSettings(Shortcut.None);   // the user turned it off
+        store.Save(s);
+
+        Settings again = store.Load();
+        Assert.Equal("Ctrl+Alt+A", new Shortcut(
+            again.RegionShortcut!.VirtualKey, (HotKeyModifiers)again.RegionShortcut.Modifiers,
+            again.RegionShortcut.Key).Display);
+        Assert.True(again.WindowShortcut!.IsEmpty);
+        Assert.Null(again.FullscreenShortcut);   // never written → the built-in default applies
+    }
+
+    [Fact]
+    public void Normalize_drops_a_shortcut_that_could_never_fire_but_keeps_a_deliberate_off()
+    {
+        var s = new Settings
+        {
+            // A bare letter with no modifier would swallow normal typing.
+            RegionShortcut = new ShortcutSettings { VirtualKey = 0x41, Key = "A" },
+            WindowShortcut = new ShortcutSettings(),
+        };
+        s.Normalize();
+
+        Assert.Null(s.RegionShortcut);
+        Assert.NotNull(s.WindowShortcut);
+        Assert.True(s.WindowShortcut.IsEmpty);
+    }
+
+    [Fact]
     public void A_corrupt_settings_file_falls_back_to_defaults_instead_of_failing_to_start()
     {
         File.WriteAllText(Path.Combine(_dir, "settings.json"), "{ this is not json");

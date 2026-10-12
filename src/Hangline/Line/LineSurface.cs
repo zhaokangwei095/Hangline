@@ -74,6 +74,10 @@ public sealed class LineSurface : Canvas
         foreach ((Guid id, CardView view) in _views)
         {
             if (_model.Find(id) is null) continue;
+            // The view draws from the controller's record for this card; the
+            // reference is re-taken here because Forget/Get can hand back a
+            // fresh one when a photo is re-hung.
+            view.Motion = _motion.Get(id);
             view.ApplyMotion(_model.Size);
         }
     }

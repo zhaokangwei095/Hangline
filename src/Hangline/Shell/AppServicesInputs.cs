@@ -32,10 +32,10 @@ public sealed partial class AppServices
         Sink = new MessageSink();
         Keys = new HotKeyManager(Sink);
 
-        Keys.TryBind(Toggle, Settings.ToShortcut(), () => Line?.Toggle());
-        Keys.TryBind(Region, RegionDefault, CaptureRegion);
-        Keys.TryBind(Fullscreen, FullscreenDefault, CaptureFullscreen);
-        Keys.TryBind(Window, WindowDefault, CaptureWindow);
+        Keys.TryBind(Toggle, ShortcutFor(Toggle), () => Line?.Toggle());
+        Keys.TryBind(Region, ShortcutFor(Region), CaptureRegion);
+        Keys.TryBind(Fullscreen, ShortcutFor(Fullscreen), CaptureFullscreen);
+        Keys.TryBind(Window, ShortcutFor(Window), CaptureWindow);
         ApplySnapshotKey();
 
         Clipboards = new ClipboardWatcher(Sink);
@@ -95,6 +95,58 @@ public sealed partial class AppServices
     public const string Window = "window";
     public const string Snapshot = "snapshot";
 
+    /// <summary>
+    /// Whether Print Screen is actually ours at the moment. The settings window
+    /// shows this instead of just echoing the checkbox, because a hotkey that
+    /// another app grabbed first looks exactly like a feature that does nothing.
+    /// </summary>
+    public bool SnapshotBound { get; private set; }
+
+    /// The shortcut a binding uses when the user never chose one.
+    public Shortcut DefaultFor(string name) => name switch
+    {
+        Toggle => Shortcut.Standard,
+        Region => RegionDefault,
+        Fullscreen => FullscreenDefault,
+        Window => WindowDefault,
+        _ => Shortcut.None,
+    };
+
+    /// The shortcut a binding should use: what the user chose, or the built-in
+    /// default when they never chose one. An explicit empty entry is their "off".
+    public Shortcut ShortcutFor(string name) => name switch
+    {
+        Toggle => Settings.ToShortcut(),
+        _ => Stored(name switch
+        {
+            Region => Settings.RegionShortcut,
+            Fullscreen => Settings.FullscreenShortcut,
+            Window => Settings.WindowShortcut,
+            _ => null,
+        }) ?? DefaultFor(name),
+    };
+
+    private static Shortcut? Stored(ShortcutSettings? saved) => saved switch
+    {
+        null => null,
+        { IsEmpty: true } => Shortcut.None,
+        var s => new Shortcut(s.VirtualKey, (HotKeyModifiers)s.Modifiers, s.Key),
+    };
+
+    /// Remembers the user's choice for any of the four re-bindable keys.
+    public void WriteShortcut(string name, Shortcut shortcut)
+    {
+        switch (name)
+        {
+            case Toggle: Settings.SetShortcut(shortcut); break;
+            case Region: Settings.RegionShortcut = Settings.ToSettings(shortcut); break;
+            case Fullscreen: Settings.FullscreenShortcut = Settings.ToSettings(shortcut); break;
+            case Window: Settings.WindowShortcut = Settings.ToSettings(shortcut); break;
+            default: return;
+        }
+        Save();
+    }
+
     /// Taking Print Screen over is the Windows equivalent of the original
     /// rewriting the system screenshot preferences: the same key, but the shot
     /// lands on the line instead of the desktop. Releasing it is a single
@@ -103,13 +155,26 @@ public sealed partial class AppServices
     {
         if (Settings.InboxEnabled)
         {
-            if (!Keys.TryBind(Snapshot, Shortcut.PrintScreen, CaptureRegion))
+            SnapshotBound = Keys.TryBind(Snapshot, Shortcut.PrintScreen, CaptureRegion);
+            if (!SnapshotBound)
                 Log.Write("Print Screen is held by another app; the rest of takeover still works");
         }
         else
         {
             Keys.Unbind(Snapshot);
+            SnapshotBound = false;
         }
+    }
+
+    /// What the settings window says about the Print Screen key. Claiming the
+    /// key is ours when the registration was refused is the one thing this app
+    /// must not do.
+    public string SnapshotStatus()
+    {
+        if (!Settings.InboxEnabled) return Localization.T("Print Screen is left to Windows.");
+        return SnapshotBound
+            ? Localization.T("Print Screen is ours: press it and drag out a region.")
+            : Localization.T("Something else already holds Print Screen, so that key is not ours. Everything else about takeover works.");
     }
 
     /// Re-bind a named shortcut, keeping the old one if Windows refuses the new.
@@ -121,7 +186,7 @@ public sealed partial class AppServices
             Keys.TryBind(name, fallback, HandlerFor(name));
             return false;
         }
-        if (name == Toggle) { Settings.SetShortcut(shortcut); Save(); }
+        WriteShortcut(name, shortcut);
         return true;
     }
 

@@ -34,7 +34,16 @@ public static class Localization
         try
         {
             string? found = Manager.GetString(english, CultureInfo.GetCultureInfo(Resolve()));
-            return string.IsNullOrEmpty(found) ? english : found;
+            if (string.IsNullOrEmpty(found))
+            {
+                // Falling back to the English text is the right thing to show,
+                // but it is silent: the test suite only sees literal calls with
+                // a constant string, so a key built from a variable would slip
+                // through. Saying it in the log is what catches that.
+                if (IsChinese) Log.Write($"missing translation: {english}");
+                return english;
+            }
+            return found;
         }
         catch (MissingManifestResourceException)
         {

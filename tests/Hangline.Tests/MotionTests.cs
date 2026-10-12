@@ -91,6 +91,49 @@ public class MotionTests
         motion.Tick(1.0 / 60);
         Assert.True(motion.RevealY < -1, $"reveal started at {motion.RevealY}");
     }
+
+    [Fact]
+    public void The_corner_badge_fades_in_over_its_clock_and_keeps_asking_for_frames()
+    {
+        var motion = new Line.MotionController();
+        var id = Guid.NewGuid();
+        motion.Hover(id, true);
+
+        int frames = 0;
+        while (frames < 120 && motion.Tick(1.0 / 60)) frames++;
+
+        Assert.Equal(1, motion.Get(id).Badge, 3);
+        // 0.26 s at 60 Hz is ~16 frames; anything much shorter means the fade
+        // is not what keeps the loop alive.
+        Assert.InRange(frames, 12, 40);
+    }
+
+    [Fact]
+    public void The_corner_badge_fades_back_out_and_then_the_loop_stops()
+    {
+        var motion = new Line.MotionController();
+        var id = Guid.NewGuid();
+        motion.Hover(id, true);
+        for (int i = 0; i < 300 && motion.Tick(1.0 / 60); i++) { }
+        Assert.Equal(1, motion.Get(id).Badge, 3);
+
+        motion.Hover(id, false);
+        int frames = 0;
+        while (frames < 120 && motion.Tick(1.0 / 60)) frames++;
+
+        Assert.Equal(0, motion.Get(id).Badge, 3);
+        Assert.True(frames > 1, "淡出也要走完自己的时长，不能直接消失");
+    }
+
+    [Fact]
+    public void Hiding_the_line_clears_hover_so_no_badge_is_left_burning()
+    {
+        var motion = new Line.MotionController();
+        var id = Guid.NewGuid();
+        motion.Hover(id, true);
+        motion.ClearHovers();
+        Assert.False(motion.Get(id).Hovered);
+    }
 }
 
 public class RevealTests
@@ -130,6 +173,23 @@ public class RevealTests
         reveal.Tick(2, 0.05, inBand: false, insidePanel: false);
         for (double t = 2; t < 2.4; t += 0.05) reveal.Tick(t, 0.05, inBand: true, insidePanel: false);
         Assert.True(reveal.Wanted);
+    }
+
+    [Fact]
+    public void A_held_line_stays_down_and_returns_to_normal_rules_when_released()
+    {
+        var reveal = new Input.RevealController();
+        bool shown = false;
+        reveal.Apply = on => shown = on;
+
+        reveal.Force(true);              // what bringing the line down does
+        reveal.HoldOpen = true;
+        for (double t = 0; t < 1.2; t += 0.05) reveal.Tick(t, 0.05, inBand: false, insidePanel: false);
+        Assert.True(shown);              // pointer far away, nothing hanging: still held
+
+        reveal.Release();
+        for (double t = 2; t < 3; t += 0.05) reveal.Tick(t, 0.05, inBand: false, insidePanel: false);
+        Assert.False(shown);             // the manual flag went with the hold
     }
 }
 

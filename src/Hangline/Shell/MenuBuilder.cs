@@ -4,8 +4,10 @@ using Forms = System.Windows.Forms;
 namespace Hangline.Shell;
 
 /// <summary>
-/// Builds the tray menu. Rebuilt on every open so a checkmark can never go
-/// stale — the original does the same with <c>menuNeedsUpdate</c>.
+/// Builds the tray menu. <see cref="Populate"/> refills the same instance and
+/// the tray calls it on every right-click, so a checkmark can never go stale —
+/// the original does the same with <c>menuNeedsUpdate</c>. (NotifyIcon never
+/// raises the menu's own Opening event, hence rebuilding on the press.)
 /// Items whose behaviour needs a part of the app that is not wired yet are
 /// left out rather than shown disabled, so nothing in here lies.
 /// </summary>
@@ -13,12 +15,22 @@ public static class MenuBuilder
 {
     public static Forms.ContextMenuStrip Build(AppServices app)
     {
-        var menu = new Forms.ContextMenuStrip { ShowImageMargin = false };
+        // The check mark is drawn in the image margin, so that margin has to
+        // stay for a tick to be visible at all; ShowCheckMargin keeps it narrow.
+        var menu = new Forms.ContextMenuStrip { ShowImageMargin = false, ShowCheckMargin = true };
+        Populate(menu, app);
+        return menu;
+    }
+
+    public static void Populate(Forms.ContextMenuStrip menu, AppServices app)
+    {
+        menu.Items.Clear();
         var s = app.Settings;
         string T(string english) => Localization.T(english);
 
-        Add(menu.Items, app.Line is { Revealed: true } ? T("Hide line") : T("Show line"),
-            enabled: app.Line is not null, onClick: app.ToggleLine);
+        Check(menu.Items, T("Line is down"), app.Line is { Revealed: true },
+            T("Show or hide the line; the shortcut does the same"),
+            _ => app.ToggleLine(), enabled: app.Line is not null);
 
         Add(menu.Items, T("Take everything down"),
             enabled: app.Line is not null && app.Line.LiveCount > 0,
@@ -32,13 +44,15 @@ public static class MenuBuilder
             T("Images you copy hang on the line too"),
             on => app.SetClipboardEnabled(on));
 
+        // These three are independent switches, not a choice: the original
+        // shows them as three checkmarks too. Radio buttons here would lie.
         var bring = Submenu(menu.Items, T("Bring the line down"));
-        Radio(bring, T("When the pointer rests at the top edge"), !s.RevealOnEdgeOff,
-              on => { s.RevealOnEdgeOff = !on; app.ApplyRevealToggles(); });
-        Radio(bring, T("When something new hangs"), s.RevealOnNewHang,
-              on => { s.RevealOnNewHang = on; app.ApplyRevealToggles(); });
-        Radio(bring, T("Over full screen apps"), s.ShowOverFullScreen,
-              on => { s.ShowOverFullScreen = on; app.ApplyRevealToggles(); });
+        Check(bring.DropDownItems, T("When the pointer rests at the top edge"), !s.RevealOnEdgeOff, null,
+            on => { s.RevealOnEdgeOff = !on; app.ApplyRevealToggles(); });
+        Check(bring.DropDownItems, T("When something new hangs"), s.RevealOnNewHang, null,
+            on => { s.RevealOnNewHang = on; app.ApplyRevealToggles(); });
+        Check(bring.DropDownItems, T("Over full screen apps"), s.ShowOverFullScreen, null,
+            on => { s.ShowOverFullScreen = on; app.ApplyRevealToggles(); });
 
         var watch = Submenu(menu.Items, T("Also watch folders"));
         foreach (string folder in s.ExtraFolders)
@@ -81,16 +95,15 @@ public static class MenuBuilder
         // Submenu() adds itself to the menu, so this lands after "Size".
         var shortcut = Submenu(menu.Items, T("Shortcut"));
         shortcut.DropDownItems.Add(new Forms.ToolStripMenuItem(app.ShortcutDisplay) { Enabled = false });
-        Add(shortcut.DropDownItems, T("Change Shortcut…"), app.RecordShortcut);
+        Add(shortcut.DropDownItems, T("Change Shortcut…"), () => app.RecordShortcut());
 
         menu.Items.Add(new Forms.ToolStripSeparator());
         Add(menu.Items, T("Open screenshots folder"), app.OpenInboxFolder);
         Check(menu.Items, T("Sounds"), !s.SoundOff, null, on => app.SetSounds(on));
         Check(menu.Items, T("Open at login"), app.AutostartIsOn, null, on => app.SetAutostart(on));
         menu.Items.Add(new Forms.ToolStripSeparator());
+        Add(menu.Items, T("Settings…"), () => app.ShowSettings());
         Add(menu.Items, T("Quit"), app.Quit);
-
-        return menu;
     }
 
     // MARK: - helpers
@@ -113,11 +126,12 @@ public static class MenuBuilder
     }
 
     private static void Check(Forms.ToolStripItemCollection items, string text, bool isChecked,
-        string? tip, Action<bool> onChange)
+        string? tip, Action<bool> onChange, bool enabled = true)
     {
         var item = new Forms.ToolStripMenuItem(text)
         {
             Checked = isChecked,
+            Enabled = enabled,
             ToolTipText = tip ?? string.Empty,
         };
         item.Click += (_, _) =>

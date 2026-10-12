@@ -11,7 +11,9 @@ public sealed partial class AppServices
 {
     /// Never throw while building a menu: a tray app that dies because one
     /// readout has no source yet is worse than a readout that says "—".
-    public string ShortcutDisplay => Keys?.Current(Toggle).Display ?? Settings.ToShortcut().Display;
+    public string ShortcutDisplayFor(string name) => Keys is null ? "—" : Keys.Current(name).Display;
+
+    public string ShortcutDisplay => ShortcutDisplayFor(Toggle);
 
     public void ToggleLine()
     {
@@ -46,7 +48,28 @@ public sealed partial class AppServices
     public void SetSounds(bool on)
     {
         Settings.SoundOff = !on;
+        // The model carries the live switch; without this the tick only went
+        // quiet after a restart, which made the menu item look broken.
+        Model.SoundOn = on;
         Save();
+    }
+
+    /// <summary>One settings window at a time; opening it again focuses the one
+    /// already there instead of stacking a second copy.</summary>
+    public void ShowSettings(int tab = 0)
+    {
+        if (_settings is not null)
+        {
+            if (!_settings.IsActive) _settings.Activate();
+            return;
+        }
+
+        _settings = new SettingsWindow(this, tab) { Owner = null };
+        _settings.Closed += (_, _) => _settings = null;
+        _settings.Show();
+        // The tray's own popup is still closing when this runs, so the new
+        // window can appear without activation; ask for it explicitly.
+        _settings.Activate();
     }
 
     public void SetKeepOnLine(int n)
@@ -118,20 +141,19 @@ public sealed partial class AppServices
         Tray.RebuildMenu();
     }
 
-    /// <summary>Open the recorder for the show/hide shortcut. If Windows refuses
-    /// the new combination the old one is kept, so the user is never left with a
-    /// shortcut that does nothing.</summary>
-    public void RecordShortcut()
+    /// <summary>Open the recorder for one of the four re-bindable shortcuts. If
+    /// Windows refuses the new combination the old one is kept, so the user is
+    /// never left with a shortcut that does nothing.</summary>
+    public void RecordShortcut(string name = Toggle)
     {
         var recorder = new Input.ShortcutRecorderWindow(
-            Keys.Current(Toggle),
-            shortcut => Rebind(Toggle, shortcut),
+            Keys.Current(name),
+            shortcut => Rebind(name, shortcut),
             () => Tray.RebuildMenu());
         recorder.Show();
     }
 
     public bool AutostartIsOn => Autostart.IsEnabled();
-
     public void SetAutostart(bool on)
     {
         Autostart.Set(on);

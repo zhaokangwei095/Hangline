@@ -28,6 +28,19 @@ public sealed class RevealController
     private bool _manual;
 
     public bool Pinned { get; set; }
+
+    /// A cascade that has to be watched — taking everything down — holds the
+    /// line open past every reason it otherwise has to go back up.
+    public bool HoldOpen;
+
+    /// Ends a hold. Whatever brought the line down for the cascade was not the
+    /// user asking for it to stay, so the manual flag goes with it.
+    public void Release()
+    {
+        HoldOpen = false;
+        _manual = false;
+    }
+
     public bool RevealOnEdge { get; set; } = true;
     public bool RevealOnPeek { get; set; } = true;
     public Func<bool> Busy { get; set; } = () => false;
@@ -84,6 +97,12 @@ public sealed class RevealController
         }
 
         if (Pinned)
+        {
+            Want(true);
+            return;
+        }
+
+        if (HoldOpen)
         {
             Want(true);
             return;

@@ -90,12 +90,17 @@ public sealed class CardView : FrameworkElement
         if (Item.IsRecording)
             Badges.DrawPlay(dc, new Point(card.X + card.Width / 2, card.Y + card.Height / 2), 1);
 
-        double badge = Motion.Hovered ? 1 : 0;
-        if (badge > 0)
+        // The corner badge fades and pops in over its own clock — the progress
+        // lives in the controller so the frame loop knows to keep going.
+        double badge = Ease.OutQuad(Motion.Badge);
+        if (badge > 0.001)
         {
             var center = new Point(card.X + 3 + Badges.CrossDiameter / 2, card.Y + 3 + Badges.CrossDiameter / 2);
+            double s = 0.6 + 0.4 * badge;
+            dc.PushTransform(new ScaleTransform(s, s, center.X, center.Y));
             if (InInbox) Badges.DrawCross(dc, center, badge);
             else Badges.DrawEyeSlash(dc, center, badge);
+            dc.Pop();
         }
 
         dc.Pop();

@@ -122,6 +122,19 @@ public static class Debug
                     Log.Write($"test bind: {app.Keys.TryBind("test", new Shortcut(0x7B, HotKeyModifiers.Control | HotKeyModifiers.Alt, "F12"), () => Log.Write("TEST HOTKEY FIRED"))}");
                     break;
 
+                // Self-check for the fall cascade: taking everything down is
+                // supposed to be watched, and a script cannot click the tray.
+                case "--take-down" when i + 1 < args.Length:
+                    if (double.TryParse(args[++i], out double later))
+                        AppServices.Delay(later, () => app.Line?.TakeEverythingDown());
+                    break;
+
+                // Open the settings window on its own, so its layout can be
+                // screenshotted without clicking the tray by hand.
+                case "--settings":
+                    app.ShowSettings(i + 1 < args.Length && int.TryParse(args[i + 1], out int page) ? page : 0);
+                    break;
+
                 case "--size" when i + 1 < args.Length:
                     app.SetLineSize(args[++i]);
                     break;

@@ -15,8 +15,11 @@
   <data name="Show line" xml:space="preserve">
     <value>Show line</value>
   </data>
-  <data name="Hide line" xml:space="preserve">
-    <value>Hide line</value>
+  <data name="Line is down" xml:space="preserve">
+    <value>Line is down</value>
+  </data>
+  <data name="Show or hide the line; the shortcut does the same" xml:space="preserve">
+    <value>Show or hide the line; the shortcut does the same</value>
   </data>
   <data name="Take everything down" xml:space="preserve">
     <value>Take everything down</value>
@@ -189,5 +192,86 @@
   </data>
   <data name="{0} is already used by another app" xml:space="preserve">
     <value>{0} is already used by another app</value>
+  </data>
+  <data name="Hangline Settings" xml:space="preserve">
+    <value>Hangline Settings</value>
+  </data>
+  <data name="General" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="Shortcuts" xml:space="preserve">
+    <value>Shortcuts</value>
+  </data>
+  <data name="The line" xml:space="preserve">
+    <value>The line</value>
+  </data>
+  <data name="Show or hide the line" xml:space="preserve">
+    <value>Show or hide the line</value>
+  </data>
+  <data name="Photos in Hangline's folder go to the Recycle Bin; others are only taken off the line" xml:space="preserve">
+    <value>Photos in Hangline's folder go to the Recycle Bin; others are only taken off the line</value>
+  </data>
+  <data name="Where screenshots come from" xml:space="preserve">
+    <value>Where screenshots come from</value>
+  </data>
+  <data name="Takes over the Print Screen key and reads the folders Windows saves screenshots to" xml:space="preserve">
+    <value>Takes over the Print Screen key and reads the folders Windows saves screenshots to</value>
+  </data>
+  <data name="How much hangs" xml:space="preserve">
+    <value>How much hangs</value>
+  </data>
+  <data name="More than fit are reached with the mouse wheel" xml:space="preserve">
+    <value>More than fit are reached with the mouse wheel</value>
+  </data>
+  <data name="Only the photos and the room they take change" xml:space="preserve">
+    <value>Only the photos and the room they take change</value>
+  </data>
+  <data name="The app" xml:space="preserve">
+    <value>The app</value>
+  </data>
+  <data name="Where Hangline's own captures land" xml:space="preserve">
+    <value>Where Hangline's own captures land</value>
+  </data>
+  <data name="Settings…" xml:space="preserve">
+    <value>Settings…</value>
+  </data>
+  <data name="Press a combination in the recorder. PrtSc and the F keys may stand alone; anything else needs Ctrl, Alt or Shift, or it would swallow your typing." xml:space="preserve">
+    <value>Press a combination in the recorder. PrtSc and the F keys may stand alone; anything else needs Ctrl, Alt or Shift, or it would swallow your typing.</value>
+  </data>
+  <data name="Screenshots Hangline takes" xml:space="preserve">
+    <value>Screenshots Hangline takes</value>
+  </data>
+  <data name="Print Screen" xml:space="preserve">
+    <value>Print Screen</value>
+  </data>
+  <data name="While this is on, Hangline registers the Print Screen key and a press starts a region capture" xml:space="preserve">
+    <value>While this is on, Hangline registers the Print Screen key and a press starts a region capture</value>
+  </data>
+  <data name="Change…" xml:space="preserve">
+    <value>Change…</value>
+  </data>
+  <data name="Back to default" xml:space="preserve">
+    <value>Back to default</value>
+  </data>
+  <data name="Print Screen is left to Windows." xml:space="preserve">
+    <value>Print Screen is left to Windows.</value>
+  </data>
+  <data name="Print Screen is ours: press it and drag out a region." xml:space="preserve">
+    <value>Print Screen is ours: press it and drag out a region.</value>
+  </data>
+  <data name="Something else already holds Print Screen, so that key is not ours. Everything else about takeover works." xml:space="preserve">
+    <value>Something else already holds Print Screen, so that key is not ours. Everything else about takeover works.</value>
+  </data>
+  <data name="Take down now" xml:space="preserve">
+    <value>Take down now</value>
+  </data>
+  <data name="Region capture" xml:space="preserve">
+    <value>Region capture</value>
+  </data>
+  <data name="Full-screen capture" xml:space="preserve">
+    <value>Full-screen capture</value>
+  </data>
+  <data name="Active window" xml:space="preserve">
+    <value>Active window</value>
   </data>
 </root>

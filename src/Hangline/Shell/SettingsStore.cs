@@ -47,10 +47,16 @@ public sealed class Settings
 
     public ShortcutSettings? Shortcut { get; set; }
 
+    /// The three capture shortcuts. An absent entry means the built-in default;
+    /// an explicit empty one means the user turned that capture off.
+    public ShortcutSettings? RegionShortcut { get; set; }
+    public ShortcutSettings? FullscreenShortcut { get; set; }
+    public ShortcutSettings? WindowShortcut { get; set; }
+
     /// "auto" follows Windows; "zh-Hans" and "en" force one.
     public string Language { get; set; } = "auto";
 
-    /// Set once the user has been asked whether Hangline should take screenshots.
+    /// 0 = as many as fit across the screen; otherwise one of 25 / 50 / 100.
     public int? KeepChoice => KeepOnLine is 25 or 50 or 100 ? KeepOnLine : null;
 
     /// An absent shortcut still means Ctrl+Alt+T; only an explicit empty entry
@@ -60,12 +66,21 @@ public sealed class Settings
         : Core.Shortcut.Standard;
 
     public void SetShortcut(Core.Shortcut shortcut) =>
-        Shortcut = new ShortcutSettings
-        {
-            VirtualKey = shortcut.VirtualKey,
-            Modifiers = (int)shortcut.Modifiers,
-            Key = shortcut.Label,
-        };
+        Shortcut = ToSettings(shortcut);
+
+    public static ShortcutSettings ToSettings(Core.Shortcut shortcut) => new()
+    {
+        VirtualKey = shortcut.VirtualKey,
+        Modifiers = (int)shortcut.Modifiers,
+        Key = shortcut.Label,
+    };
+
+    /// An empty slot is the user's "off", not a broken value, so it is left
+    /// alone; anything else that could not be registered is dropped back to
+    /// the default rather than kept as a shortcut that does nothing.
+    private static ShortcutSettings? Kept(ShortcutSettings? stored) =>
+        stored is { IsEmpty: false } s &&
+        !new Core.Shortcut(s.VirtualKey, (Core.HotKeyModifiers)s.Modifiers, s.Key).IsValid ? null : stored;
 
     public void Normalize()
     {
@@ -75,6 +90,9 @@ public sealed class Settings
         ExtraFolders.RemoveAll(string.IsNullOrWhiteSpace);
         if (ExtraFolders.Count > 3) ExtraFolders.RemoveRange(3, ExtraFolders.Count - 3);
         Pegged.RemoveAll(string.IsNullOrWhiteSpace);
+        RegionShortcut = Kept(RegionShortcut);
+        FullscreenShortcut = Kept(FullscreenShortcut);
+        WindowShortcut = Kept(WindowShortcut);
     }
 }
 

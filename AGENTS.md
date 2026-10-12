@@ -49,6 +49,12 @@ Command-line switches, parsed in `Shell/Debug.cs` (dev-only):
 
 - `pin` — force the line down and never retract it
 - `hang <path>` — hang a file from the command line
+- `take-down <秒>` — fire "take everything down" after N seconds, so the
+  reveal-then-fall cascade can be screenshotted without a hand on the tray
+- `settings [页]` — open the settings window (page 0 or 1) to lay it out
 - `cursor <x>,<y>` — move the real cursor (this hijacks the user's mouse; say so before using it)
 
 `scripts/shot.ps1` captures the screen to a PNG so the result can be inspected.
+Window state (is the line down, is the fall overlay up) is cheaper and more
+reliable than pixels: `scripts/winrect.ps1` lists every Hangline window with
+`vis=` and its rect.
