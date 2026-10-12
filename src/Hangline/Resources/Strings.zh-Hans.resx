@@ -138,4 +138,31 @@
   <data name="Take down everything to the right" xml:space="preserve">
     <value>取下右边全部</value>
   </data>
+  <data name="Rectangle" xml:space="preserve">
+    <value>矩形</value>
+  </data>
+  <data name="Arrow" xml:space="preserve">
+    <value>箭头</value>
+  </data>
+  <data name="Pen" xml:space="preserve">
+    <value>画笔</value>
+  </data>
+  <data name="Text" xml:space="preserve">
+    <value>文字</value>
+  </data>
+  <data name="Mosaic" xml:space="preserve">
+    <value>马赛克</value>
+  </data>
+  <data name="Undo" xml:space="preserve">
+    <value>撤销</value>
+  </data>
+  <data name="Redo" xml:space="preserve">
+    <value>重做</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
 </root>

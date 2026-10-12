@@ -60,6 +60,33 @@ public static class Actions
         Overlay.PreviewHost.Show(live, Math.Max(0, at));
     }
 
+    /// Hold a photo: mark it up here, and the card swaps its picture in place
+    /// when the edit is saved.
+    public static void Annotate(PeggedItem item, Action<string> onSaved)
+    {
+        if (item.IsRecording)
+        {
+            Open(item);
+            return;
+        }
+
+        try
+        {
+            var editor = new Overlay.AnnotatorWindow(item.Path);
+            editor.Closed += (_, _) =>
+            {
+                if (editor.Saved) onSaved(item.Path);
+            };
+            editor.Show();
+        }
+        catch (Exception ex)
+        {
+            // A broken editor must not swallow the gesture: fall back to Paint.
+            Log.Error("annotate", ex);
+            EditExternally(item);
+        }
+    }
+
     /// The Windows stand-in for macOS's Markup until the in-app editor lands.
     public static void EditExternally(PeggedItem item) => Start("mspaint.exe", $"\"{item.Path}\"");
 

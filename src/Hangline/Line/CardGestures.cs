@@ -138,13 +138,7 @@ public sealed class CardGestures
     /// Paint, and the card refreshes itself when the file changes on disk.
     private void OnLongPress()
     {
-        if (Item.IsRecording)
-        {
-            Actions.Open(Item);
-            return;
-        }
-        Actions.EditExternally(Item);
-        _window.WatchForEdit(Item);
+        Actions.Annotate(Item, path => _model.ReloadThumbnailFor(path));
     }
 
     /// Dragging out is done by the shell: dropping on a folder moves the file,
@@ -201,6 +195,7 @@ public sealed class CardGestures
         Add(menu, T("Open"), () => Actions.Open(Item));
         Add(menu, T("Quick Look"), () => Actions.QuickLook(_model, Item));
         Add(menu, T("Markup"), OnLongPress);
+        
         Add(menu, T("Show in folder"), () => Actions.Reveal(Item));
 
         if (_model.IsInInbox(Item.Id))

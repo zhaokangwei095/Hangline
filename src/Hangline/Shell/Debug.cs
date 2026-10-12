@@ -15,6 +15,15 @@ namespace Hangline.Shell;
 /// </summary>
 public static class Debug
 {
+    private static void AnnotateSelfTest(string path)
+    {
+        var editor = new Overlay.AnnotatorWindow(path);
+        editor.Show();
+        editor.SelfTest();
+        editor.Save();
+        Log.Write($"annotate self-test wrote {path}");
+    }
+
     public static void Handle(string[] args, AppServices app)
     {
         for (int i = 0; i < args.Length; i++)
@@ -58,6 +67,22 @@ public static class Debug
                     var live = app.Model.Live();
                     if (live.Count > 0)
                         Overlay.PreviewHost.Show(live, live.Count - 1);
+                    break;
+
+                case "--annotate" when i + 1 < args.Length:
+                {
+                    var editor = new Overlay.AnnotatorWindow(args[++i]);
+                    editor.ContentRendered += (_, _) => Log.Write("annotator rendered");
+                    editor.Closed += (_, _) => Log.Write("annotator closed");
+                    editor.Show();
+                    Log.Write($"annotator shown: visible={editor.IsVisible} size={editor.Width}x{editor.Height}");
+                    break;
+                }
+
+                // Draw one of each mark and save it, so the render pipeline can
+                // be checked without a hand on the mouse.
+                case "--annotate-test" when i + 1 < args.Length:
+                    AnnotateSelfTest(args[++i]);
                     break;
 
                 case "--size" when i + 1 < args.Length:
