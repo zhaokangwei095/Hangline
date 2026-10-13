@@ -59,11 +59,16 @@ public sealed class Settings
     /// 0 = as many as fit across the screen; otherwise one of 25 / 50 / 100.
     public int? KeepChoice => KeepOnLine is 25 or 50 or 100 ? KeepOnLine : null;
 
-    /// An absent shortcut still means Ctrl+Alt+T; only an explicit empty entry
-    /// turns it off, matching the original.
-    public Core.Shortcut ToShortcut() => Shortcut is { IsEmpty: false } s
-        ? new Core.Shortcut(s.VirtualKey, (Core.HotKeyModifiers)s.Modifiers, s.Key)
-        : Core.Shortcut.Standard;
+    /// An absent shortcut still means Ctrl+Alt+T; an explicit empty one means the
+    /// user deleted it in the recorder, and that has to mean "off". Falling back
+    /// to the default there left people holding a key that could not be
+    /// registered at all, which looks exactly like a dead feature.
+    public Core.Shortcut ToShortcut() => Shortcut switch
+    {
+        null => Core.Shortcut.Standard,
+        { IsEmpty: true } => Core.Shortcut.None,
+        var s => new Core.Shortcut(s.VirtualKey, (Core.HotKeyModifiers)s.Modifiers, s.Key),
+    };
 
     public void SetShortcut(Core.Shortcut shortcut) =>
         Shortcut = ToSettings(shortcut);

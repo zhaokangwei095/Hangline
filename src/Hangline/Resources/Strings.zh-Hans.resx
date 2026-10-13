@@ -190,7 +190,7 @@
     <value>请同时按住 Ctrl、Alt 或 Shift</value>
   </data>
   <data name="{0} is already used by another app" xml:space="preserve">
-    <value>{0} 已被其他程序占用</value>
+    <value>{0} 已经被占用，换一组试试</value>
   </data>
   <data name="Hangline Settings" xml:space="preserve">
     <value>Hangline 设置</value>

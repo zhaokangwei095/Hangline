@@ -31,13 +31,39 @@ public sealed class HotKeyManager : IDisposable
     public bool TryBind(string name, Shortcut shortcut, Action handler)
     {
         if (shortcut.IsEmpty) { Unbind(name); return true; }
-        if (!shortcut.IsValid) return false;
+        if (!shortcut.IsValid)
+        {
+            Shell.Log.Write($"hotkey {shortcut.Display} rejected before binding: not a valid combination");
+            return false;
+        }
 
         int id = _next++;
         uint modifiers = (uint)shortcut.Modifiers | NativeMethods.MOD_NOREPEAT;
+
+        // Asking for the key this name already holds is not a collision: it is
+        // what happens when someone opens the recorder and presses the current
+        // combination. Registering it a second time would fail with 1409 and
+        // blame some other program for our own bookkeeping.
+        if (_current.TryGetValue(name, out Shortcut held) && held == shortcut) return true;
+
+        foreach ((string other, Shortcut otherKey) in _current)
+        {
+            if (other != name && otherKey == shortcut)
+            {
+                Shell.Log.Write($"hotkey {shortcut.Display} is already Hangline's “{other}” key");
+                return false;
+            }
+        }
+
         if (!NativeMethods.RegisterHotKey(_sink.Handle, id, modifiers, (uint)shortcut.VirtualKey))
         {
-            Shell.Log.Write($"hotkey {shortcut.Display} is taken");
+            // 1409 is ERROR_HOTKEY_ALREADY_REGISTERED — someone else has the key.
+            // Anything else is our own bug, so the number has to be in the log:
+            // saying "is taken" for every failure sent a user chasing other
+            // applications when the chord never left this process.
+            int error = System.Runtime.InteropServices.Marshal.GetLastWin32Error();
+            Shell.Log.Write($"hotkey {shortcut.Display} refused (win32 {error}, " +
+                            $"vk=0x{shortcut.VirtualKey:x}, mods=0x{modifiers:x})");
             return false;
         }
 

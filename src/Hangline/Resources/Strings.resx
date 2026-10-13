@@ -191,7 +191,7 @@
     <value>Hold Ctrl, Alt or Shift with it</value>
   </data>
   <data name="{0} is already used by another app" xml:space="preserve">
-    <value>{0} is already used by another app</value>
+    <value>{0} is already in use - try another combination</value>
   </data>
   <data name="Hangline Settings" xml:space="preserve">
     <value>Hangline Settings</value>
