@@ -1,6 +1,7 @@
 bin/
 obj/
 publish/
+publish-singlefile/
 _shots/
 *.user
 .vs/
