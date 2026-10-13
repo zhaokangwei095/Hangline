@@ -71,6 +71,20 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     public static extern IntPtr GetForegroundWindow();
 
+    /// <summary>
+    /// A message name both instances can look up: the second launch posts it so
+    /// the one already running brings the line down. Broadcast reaches top-level
+    /// windows including our own disabled message sink.
+    /// </summary>
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    public static extern uint RegisterWindowMessage(string message);
+
+    [DllImport("user32.dll")]
+    public static extern bool PostMessage(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+    public static readonly IntPtr HWND_BROADCAST = new(0xffff);
+    public const string ToggleMessageName = "Hangline.ShowLine";
+
     [DllImport("user32.dll")]
     public static extern int GetDpiForWindow(IntPtr hwnd);
 

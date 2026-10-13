@@ -15,8 +15,14 @@ public partial class App : Application
 
         if (!ClaimSingleton())
         {
-            // Silent exit here looks exactly like a launch that failed.
-            Log.Write("another Hangline is already running; this one quits");
+            // Silent exit here looks exactly like a launch that failed, which is
+            // what people then report as "the shortcuts stopped working" — they
+            // are looking at the older instance that is still running. Ask that
+            // one to bring the line down so the double-click does something.
+            Interop.NativeMethods.PostMessage(Interop.NativeMethods.HWND_BROADCAST,
+                Interop.NativeMethods.RegisterWindowMessage(Interop.NativeMethods.ToggleMessageName),
+                IntPtr.Zero, IntPtr.Zero);
+            Log.Write("another Hangline is already running; asked it to show the line");
             Shutdown();
             return;
         }
@@ -49,7 +55,7 @@ public partial class App : Application
         base.OnExit(e);
     }
 
-    /// One line, one instance. A second launch just asks the first to toggle.
+    /// One line, one instance. A second launch asks the first to show its line.
     private bool ClaimSingleton()
     {
         _singleInstance = new Mutex(true, @"Local\Hangline.SingleInstance", out bool owned);

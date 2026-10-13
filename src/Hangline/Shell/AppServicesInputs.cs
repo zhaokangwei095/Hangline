@@ -32,6 +32,11 @@ public sealed partial class AppServices
         Sink = new MessageSink();
         Keys = new HotKeyManager(Sink);
 
+        // A second launch of the exe cannot do anything itself, so it broadcasts
+        // this and the running instance answers by showing the line.
+        Sink.On(NativeMethods.RegisterWindowMessage(NativeMethods.ToggleMessageName),
+            (_, _) => OnUi(() => LineWindow?.Reveal()));
+
         Keys.TryBind(Toggle, ShortcutFor(Toggle), () => Line?.Toggle());
         Keys.TryBind(Region, ShortcutFor(Region), CaptureRegion);
         Keys.TryBind(Fullscreen, ShortcutFor(Fullscreen), CaptureFullscreen);

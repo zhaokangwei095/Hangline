@@ -11,12 +11,13 @@ namespace Hangline.Watchers;
 /// <summary>
 /// Hangs images the user copies.
 /// <para>
-/// Windows notifies rather than being polled, so this reacts instantly. What it
-/// refuses: a copy that carries <b>files</b> is Explorer moving a file (Explorer
-/// also hands out a thumbnail bitmap, so "there is an image" is not enough), and
-/// a copy with no image at all is text — which is what a password manager puts
-/// there, and that must never become a file on disk. Text riding along with an
-/// image is normal and is not a reason to refuse.
+/// Windows notifies rather than being polled, so this reacts instantly. Two
+/// kinds of copy arrive: a bitmap (a screenshot tool, an image in a browser) and
+/// a list of files from Explorer. A bitmap is written to the inbox and hung;
+/// files are hung as they are, because they are already pictures on disk — and
+/// the thumbnail bitmap Explorer hands out next to them is ignored, or every
+/// file copy would also write a duplicate. Text is never a reason to refuse:
+/// copying an image out of a browser, Word or a PDF always carries source text.
 /// </para>
 /// </summary>
 public sealed class ClipboardWatcher : IDisposable
@@ -105,7 +106,6 @@ public sealed class ClipboardWatcher : IDisposable
 
     private void Read()
     {
-        // Text or files riding along means the copy was not "this image".
         bool files = Clipboard.ContainsFileDropList();
         bool text = Clipboard.ContainsText();
         bool hasImage = Clipboard.ContainsImage();
@@ -113,12 +113,13 @@ public sealed class ClipboardWatcher : IDisposable
         // Only which formats arrived, never what was on the clipboard.
         Log.Write($"clipboard: files={files} text={text} image={hasImage}");
 
-        // Files riding along is a copy made in Explorer, which also hands out
-        // a thumbnail bitmap — that is a file being moved, not a picture to
-        // keep. Text is not a reason to refuse: copying an image out of a
-        // browser, Word or a PDF always carries the source text too, so
-        // refusing on text threw away the case the feature exists for.
-        if (files || !hasImage) return;
+        if (files)
+        {
+            HangCopiedFiles();
+            return;
+        }
+
+        if (!hasImage) return;
 
         BitmapSource? image = Clipboard.GetImage();
         if (image is null) return;
@@ -138,6 +139,23 @@ public sealed class ClipboardWatcher : IDisposable
         File.WriteAllBytes(path, png);
 
         ImageCopied?.Invoke(path);
+    }
+
+    /// <summary>
+    /// Explorer's copy carries the files. The pictures among them hang as they
+    /// are; anything else in the list is ignored, and the thumbnail bitmap that
+    /// comes with the list is never read, so no duplicate is written.
+    /// </summary>
+    private void HangCopiedFiles()
+    {
+        int hung = 0;
+        foreach (string path in Clipboard.GetFileDropList())
+        {
+            if (!FileKind.IsImage(path) || !File.Exists(path)) continue;
+            ImageCopied?.Invoke(path);
+            hung++;
+        }
+        Log.Write($"clipboard: hung {hung} copied file{(hung == 1 ? "" : "s")}");
     }
 
     private static byte[] Png(BitmapSource source)

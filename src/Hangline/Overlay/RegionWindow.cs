@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Hangline.Core;
 using Hangline.Interop;
@@ -54,7 +55,13 @@ public sealed class RegionWindow : Window
         Topmost = true;
         WindowStartupLocation = WindowStartupLocation.Manual;
         Cursor = Cursors.Cross;
-        Background = new SolidColorBrush(Color.FromArgb(90, 0, 0, 0));
+        // This window is not transparent, so an alpha colour here is ignored and
+        // renders as solid black: the user would pick a rectangle out of a screen
+        // they cannot see. The alternative is a real transparent window, which
+        // paints the whole screen in software. Instead the desktop is grabbed once
+        // and shown dimmed — and the grab happens before this window exists, or it
+        // photographs itself.
+        Background = Backdrop(monitor) ?? new SolidColorBrush(Color.FromArgb(90, 0, 0, 0));
         AllowsTransparency = false;
         Focusable = true;
 
@@ -105,6 +112,9 @@ public sealed class RegionWindow : Window
     protected override void OnContentRendered(EventArgs e)
     {
         Shell.Log.Write($"region rendered: actual {ActualWidth}x{ActualHeight} at {Left},{Top}");
+        // Everything dim but nothing selected: the empty rectangle still has to
+        // read as "now pick something", not as a desktop that forgot to change.
+        Draw(new RectD(0, 0, 0, 0));
         base.OnContentRendered(e);
     }
 
@@ -135,6 +145,31 @@ public sealed class RegionWindow : Window
     private RectD ToPhysical(RectD dip) => new(
         Math.Round(_origin.X + dip.X * _scale), Math.Round(_origin.Y + dip.Y * _scale),
         Math.Round(dip.Width * _scale), Math.Round(dip.Height * _scale));
+
+    /// <summary>
+    /// The monitor as it looks right now, as a brush. Decoding happens here
+    /// rather than in <see cref="Interop.Gdi"/> because that is the one place
+    /// allowed to touch System.Drawing, and this needs a WPF image.
+    /// </summary>
+    private static Brush? Backdrop(MonitorInfo monitor)
+    {
+        if (Gdi.Capture(monitor.Bounds) is not { } png) return null;
+        try
+        {
+            var image = new BitmapImage();
+            image.BeginInit();
+            image.StreamSource = new MemoryStream(png);
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            image.EndInit();
+            image.Freeze();
+            return new ImageBrush(image);
+        }
+        catch (Exception ex)
+        {
+            Shell.Log.Write($"region backdrop: {ex.GetType().Name} {ex.Message}");
+            return null;
+        }
+    }
 
     private void Draw(RectD dip)
     {
