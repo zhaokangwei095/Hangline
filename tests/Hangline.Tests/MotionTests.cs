@@ -191,6 +191,61 @@ public class RevealTests
         for (double t = 2; t < 3; t += 0.05) reveal.Tick(t, 0.05, inBand: false, insidePanel: false);
         Assert.False(shown);             // the manual flag went with the hold
     }
+
+    [Fact]
+    public void A_peeked_line_waits_for_the_pointer_to_come_and_look()
+    {
+        var reveal = new Input.RevealController();
+        reveal.LiveCount = () => 3;
+        bool shown = false;
+        reveal.Apply = on => shown = on;
+
+        reveal.Peek(0);
+        Assert.True(shown);
+
+        // The pointer is wherever the copy happened — nowhere near the line.
+        // Under upstream's 2.5 s peek the line tucked away before it could be
+        // looked at, so the away clock must not run until the pointer visits.
+        double grace = Input.RevealController.PeekSeconds + Input.RevealController.PeekGrace;
+        for (double t = 0; t < grace - 0.05; t += 0.05)
+            reveal.Tick(t, 0.05, inBand: false, insidePanel: false);
+        Assert.True(shown);
+
+        // Once the pointer has been to the line, leaving is a dismissal again.
+        double at = grace - 1.0;
+        reveal.Tick(at, 0.05, inBand: true, insidePanel: false);
+        Assert.True(shown);
+        for (double t = at + 0.05; t < at + Input.RevealController.RetractDelay + 1; t += 0.05)
+            reveal.Tick(t, 0.05, inBand: false, insidePanel: false);
+        Assert.False(shown);
+    }
+
+    [Fact]
+    public void A_peek_still_gives_up_if_nobody_ever_looks()
+    {
+        var reveal = new Input.RevealController();
+        reveal.LiveCount = () => 3;
+        bool shown = false;
+        reveal.Apply = on => shown = on;
+
+        reveal.Peek(0);
+        // The peek plus its grace, with the pointer never visiting.
+        double end = Input.RevealController.PeekSeconds + Input.RevealController.PeekGrace + 1;
+        for (double t = 0; t < end; t += 0.05)
+            reveal.Tick(t, 0.05, inBand: false, insidePanel: false);
+        Assert.False(shown);
+    }
+
+    [Fact]
+    public void A_peek_with_the_setting_off_does_nothing()
+    {
+        var reveal = new Input.RevealController { RevealOnPeek = false };
+        bool shown = false;
+        reveal.Apply = on => shown = on;
+
+        reveal.Peek(0);
+        Assert.False(shown);
+    }
 }
 
 public class ShortcutTests

@@ -15,7 +15,13 @@ public sealed class RevealController
 {
     public const double HoverDelay = 0.25;
     public const double RetractDelay = 0.5;
-    public const double PeekSeconds = 2.5;
+    /// Upstream peeks for 2.5 s, which is shorter than the time it takes to move
+    /// the pointer from the keyboard to the top of the screen — the line was back
+    /// up before the copy could be looked at. This is a deliberate divergence;
+    /// see docs/parity.md.
+    public const double PeekSeconds = 6;
+    /// How much longer than a peek the line waits for a pointer that never comes.
+    public const double PeekGrace = 4;
     public const double EmptyRetract = 0.7;
 
     /// How deep the band at the top of the screen is, in physical pixels.
@@ -24,6 +30,12 @@ public sealed class RevealController
     private double _dwell;
     private double _away;
     private double _empty;
+    /// The pointer has been to the line since the last peek began, so leaving it
+    /// is now a decision to dismiss rather than "never looked".
+    private bool _visited;
+    /// A peek is on screen right now. Distinguishes a peek from a reveal the
+    /// pointer asked for, which must obey the normal away rules at once.
+    private bool _peeking;
     private double _peekUntil = double.NegativeInfinity;
     private bool _manual;
 
@@ -78,6 +90,8 @@ public sealed class RevealController
     {
         if (!RevealOnPeek) return;
         _peekUntil = now + PeekSeconds;
+        _visited = false;
+        _peeking = true;
         Want(true);
     }
 
@@ -128,7 +142,30 @@ public sealed class RevealController
             return;
         }
 
-        if (now < _peekUntil) return;
+        // While a peek is showing, the pointer is wherever the copy happened —
+        // usually nowhere near the top of the screen. Retracting the moment the
+        // peek started would hide the very thing it was meant to show, so the
+        // away clock does not run until the pointer has visited the line.
+        if (now < _peekUntil)
+        {
+            if (inZone) { _visited = true; _away = 0; }
+            else if (!_visited) return;   // nobody has looked yet; hold it
+        }
+        else if (_peeking && !_visited)
+        {
+            // Nobody came to look. A peek that could never end would leave the
+            // line hanging over a screen nobody asked it onto.
+            if (now < _peekUntil + PeekGrace) return;
+            Want(false);
+            _peeking = false;
+            return;
+        }
+        else if (_peeking)
+        {
+            // The pointer has been to the line, so the ordinary away rules take
+            // over from here.
+            _peeking = false;
+        }
 
         if (Busy())
         {
@@ -162,6 +199,8 @@ public sealed class RevealController
         Wanted = on;
         _away = 0;
         _empty = 0;
+        if (!on) _visited = false;
+        if (!on) _peeking = false;
         Apply(on);
     }
 }
