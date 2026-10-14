@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Hangline.Capture;
@@ -121,13 +122,14 @@ public sealed class ClipboardWatcher : IDisposable
 
         if (!hasImage) return;
 
-        BitmapSource? image = Clipboard.GetImage();
-        if (image is null) return;
+        byte[]? raw = ClipboardPng() ?? DecodeToPng();
+        if (raw is null || raw.LongLength == 0) return;
 
-        long pixels = (long)image.PixelWidth * image.PixelHeight;
-        if (pixels is <= 0 or > MaxPixels) return;
-
-        byte[] png = Png(image);
+        // A screenshot tool that hands over a bitmap (WeChat's Alt+A) gives a
+        // PNG with a transparent background. Keeping the transparency would
+        // hang a picture of nothing, so it is composited onto white: that is
+        // what the desktop behind the window looked like.
+        byte[] png = FlattenOntoWhite(raw);
         if (png.LongLength > MaxBytes) return;
         if (_lastBytes is not null && _lastBytes.AsSpan().SequenceEqual(png)) return;
         _lastBytes = png;
@@ -158,13 +160,123 @@ public sealed class ClipboardWatcher : IDisposable
         Log.Write($"clipboard: hung {hung} copied file{(hung == 1 ? "" : "s")}");
     }
 
-    private static byte[] Png(BitmapSource source)
+    /// <summary>
+    /// The clipboard's own PNG bytes, when the copying app put a PNG there.
+    /// This is the only path that keeps the alpha channel: WPF's
+    /// <c>Clipboard.GetImage()</c> goes through CF_DIB, which is a 24-bit
+    /// format with no transparency, so a screenshot with a transparent
+    /// background (WeChat's Alt+A is the one that does this) would arrive
+    /// with its margins already flattened to black.
+    /// </summary>
+    private static byte[]? ClipboardPng()
     {
-        var encoder = new PngBitmapEncoder();
-        encoder.Frames.Add(BitmapFrame.Create(source));
-        using var ms = new MemoryStream();
-        encoder.Save(ms);
-        return ms.ToArray();
+        try
+        {
+            // WPF's DataFormats has no constant for it; the format is
+            // registered under the plain name "PNG".
+            const string Png = "PNG";
+            if (!Clipboard.ContainsData(Png)) return null;
+            object? raw = Clipboard.GetData(Png);
+            if (raw is MemoryStream ms && ms.Length > 0) return ms.ToArray();
+            if (raw is byte[] bytes && bytes.Length > 0) return bytes;
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Log.Write($"clipboard png: {ex.GetType().Name} {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Composites a PNG's transparency onto white, returning the PNG bytes.
+    /// A screenshot with no transparency is returned untouched.
+    /// </summary>
+    private static byte[] FlattenOntoWhite(byte[] png)
+    {
+        try
+        {
+            var image = new BitmapImage();
+            image.BeginInit();
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            image.StreamSource = new MemoryStream(png);
+            image.EndInit();
+
+            if (image.Format == PixelFormats.Bgr24 || image.Format == PixelFormats.Rgb24)
+                return png;                     // already opaque
+
+            var material = new WriteableBitmap(image);
+            int w = material.PixelWidth, h = material.PixelHeight;
+            int stride = w * 4;
+            var pixels = new byte[stride * h];
+            material.CopyPixels(new Int32Rect(0, 0, w, h), pixels, stride, 0);
+
+            bool any = false;
+            for (int i = 0; i < pixels.Length; i += 4)
+            {
+                if (pixels[i + 3] == 255) continue;
+                any = true;
+                break;
+            }
+            if (!any) return png;                // nothing to flatten
+
+            // PBGRA is premultiplied, so a transparent pixel stores 0 in every
+            // channel: what was the desktop has already been multiplied away.
+            // Undoing the premultiply and compositing over white puts it back.
+            for (int i = 0; i < pixels.Length; i += 4)
+            {
+                byte a = pixels[i + 3];
+                if (a == 255) continue;
+                double un = a == 0 ? 0 : 255.0 / a;
+                double back = 255.0 - a;
+                pixels[i] = (byte)System.Math.Min(255, pixels[i] * un + back);
+                pixels[i + 1] = (byte)System.Math.Min(255, pixels[i + 1] * un + back);
+                pixels[i + 2] = (byte)System.Math.Min(255, pixels[i + 2] * un + back);
+                pixels[i + 3] = 255;
+            }
+
+            var opaque = BitmapSource.Create(w, h, 96, 96, PixelFormats.Bgra32, null, pixels, stride);
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(opaque));
+            using var ms = new MemoryStream();
+            encoder.Save(ms);
+            return ms.ToArray();
+        }
+        catch (Exception ex)
+        {
+            // A picture that cannot be decoded is better shown as it is than
+            // not hung at all.
+            Log.Write($"clipboard flatten: {ex.GetType().Name} {ex.Message}");
+            return png;
+        }
+    }
+
+    /// <summary>
+    /// The fallback for a clipboard that carries no PNG: decode whatever image
+    /// WPF can get out of it and encode that. There is no alpha to lose, because
+    /// a DIB never had any.
+    /// </summary>
+    private static byte[]? DecodeToPng()
+    {
+        try
+        {
+            BitmapSource? image = Clipboard.GetImage();
+            if (image is null) return null;
+
+            long pixels = (long)image.PixelWidth * image.PixelHeight;
+            if (pixels is <= 0 or > MaxPixels) return null;
+
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(image));
+            using var ms = new MemoryStream();
+            encoder.Save(ms);
+            return ms.ToArray();
+        }
+        catch (Exception ex)
+        {
+            Log.Write($"clipboard decode: {ex.GetType().Name} {ex.Message}");
+            return null;
+        }
     }
 
     public void Dispose()

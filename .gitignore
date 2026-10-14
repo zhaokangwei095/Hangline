@@ -2,6 +2,8 @@ bin/
 obj/
 publish/
 publish-singlefile/
+Hangline-*-win-x64-*.zip
+Hangline-*-win-x64-*.exe
 _shots/
 *.user
 .vs/

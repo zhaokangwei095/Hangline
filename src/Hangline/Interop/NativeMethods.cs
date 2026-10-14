@@ -30,6 +30,23 @@ internal static class NativeMethods
 
     public delegate bool MonitorEnumProc(IntPtr monitor, IntPtr hdc, IntPtr rect, IntPtr data);
 
+    public delegate bool WindowEnumProc(IntPtr hwnd, IntPtr lParam);
+
+    /// Enumerates every top-level window on the desktop, so a window this
+    /// process does not own a handle to — WPF's internal hidden window — can be
+    /// found and restyled.
+    [DllImport("user32.dll")]
+    public static extern bool EnumWindows(WindowEnumProc proc, IntPtr lParam);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    public static extern int GetWindowText(IntPtr hwnd, System.Text.StringBuilder text, int count);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    public static extern int GetWindowTextLength(IntPtr hwnd);
+
+    [DllImport("user32.dll")]
+    public static extern bool IsWindowVisible(IntPtr hwnd);
+
     public const int SM_XVIRTUALSCREEN = 76;
     public const int SM_YVIRTUALSCREEN = 77;
     public const int SM_CXVIRTUALSCREEN = 78;

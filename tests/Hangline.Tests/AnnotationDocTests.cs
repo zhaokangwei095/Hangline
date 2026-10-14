@@ -75,6 +75,28 @@ public class AnnotationDocTests
         Assert.Equal(30, band.Points.Count);
     }
 
+    /// <summary>
+    /// The window gives a rectangle and an arrow both of their corners on the
+    /// press, so dragging replaces the trailing one. A stroke that only ever has
+    /// one point is drawn by nothing at all: DrawRect and DrawArrow both return
+    /// early below two, which is exactly how "the box and the arrow do not work"
+    /// looked in practice.
+    /// </summary>
+    [Fact]
+    public void A_rectangle_and_an_arrow_need_both_corners_to_draw_at_all()
+    {
+        foreach (AnnotationTool tool in new[] { AnnotationTool.Rectangle, AnnotationTool.Arrow })
+        {
+            var press = Stroke(tool, new Pt(2, 2), new Pt(2, 2));
+
+            // A drag moves the second corner, never the first.
+            press.Points[^1] = new Pt(40, 30);
+            Assert.Equal(2, press.Points.Count);
+            Assert.Equal(new Pt(2, 2), press.Start);
+            Assert.Equal(new Pt(40, 30), press.End);
+        }
+    }
+
     [Fact]
     public void Sixty_steps_is_enough_history_for_a_screenshot()
     {

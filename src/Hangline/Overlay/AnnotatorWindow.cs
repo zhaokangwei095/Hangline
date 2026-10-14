@@ -221,6 +221,11 @@ public sealed class AnnotatorWindow : Window
         _doc.PushState();
         _live = new Stroke { Tool = _tool, Color = _color, Thickness = _tool == AnnotationTool.Mosaic ? 10 : 6 };
         _live.Points.Add(at);
+        // A rectangle and an arrow are two corners, so the press already has
+        // both: OnMove then replaces the trailing one. With a single point
+        // neither DrawRect nor DrawArrow would ever draw anything.
+        if (_tool is AnnotationTool.Rectangle or AnnotationTool.Arrow)
+            _live.Points.Add(at);
         _doc.Add(_live);
         _surface.CaptureMouse();
         _surface.InvalidateVisual();

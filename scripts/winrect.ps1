@@ -17,6 +17,7 @@ public static class WinProbe {
     [DllImport("user32.dll")] static extern bool EnumWindows(EnumProc cb, IntPtr l);
     [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid);
     [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetClassName(IntPtr h, StringBuilder s, int n);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetWindowTextW(IntPtr h, StringBuilder s, int n);
     [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr h);
     [DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr h, out R r);
     [DllImport("user32.dll")] static extern int GetWindowLong(IntPtr h, int i);
@@ -33,6 +34,9 @@ public static class WinProbe {
             found.Add(string.Format("pid={0} vis={1} rect={2},{3} {4}x{5} ex=0x{6:x8}",
                 pid, IsWindowVisible(h), r.L, r.T, r.Rt - r.L, r.B - r.T,
                 GetWindowLong(h, -20) & 0xFFFFFFFFu));
+            var cls = new StringBuilder(256); GetClassName(h, cls, 256);
+            var txt = new StringBuilder(256); GetWindowTextW(h, txt, 256);
+            found.Add(string.Format("    class={0} text=\"{1}\"", cls, txt));
             return true;
         }, IntPtr.Zero);
         return found;
