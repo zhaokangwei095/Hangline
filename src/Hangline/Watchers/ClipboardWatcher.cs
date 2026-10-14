@@ -122,10 +122,12 @@ public sealed class ClipboardWatcher : IDisposable
 
         if (!hasImage) return;
 
-        byte[]? raw = ClipboardDibV5() ?? ClipboardPng() ?? DecodeToPng();
+        byte[]? raw = ClipboardDibV5();
+        string source = "DIBV5";
+        if (raw is null) { raw = ClipboardPng(); source = "PNG"; }
+        if (raw is null) { raw = DecodeToPng(); source = "GetImage"; }
         if (raw is null || raw.LongLength == 0) return;
-        Log.Write($"clipboard image: {raw.LongLength} bytes via " +
-                  $"{(NativeMethods.IsClipboardFormatAvailable(NativeMethods.CF_DIBV5) ? "DIBV5" : Clipboard.ContainsData("PNG") ? "PNG" : "GetImage")}");
+        Log.Write($"clipboard image: {raw.LongLength} bytes via {source}");
 
         // A screenshot tool that hands over a bitmap (WeChat's Alt+A) gives a
         // PNG with a transparent background. Keeping the transparency would
@@ -245,8 +247,9 @@ public sealed class ClipboardWatcher : IDisposable
             System.Buffer.BlockCopy(dib, from, pixels, to, stride);
         }
 
-        // An alpha mask of zero means the high byte is unused padding rather
-        // than opacity, and there is nothing to preserve.
+        // BI_RGB with 32 bits defines the high byte as padding, and a DIB that
+        // means to carry opacity says so in the alpha mask. Guessing from the
+        // bytes would read garbage padding as transparency on an opaque image.
         PixelFormat format = alphaMask != 0 ? PixelFormats.Bgra32 : PixelFormats.Bgr32;
 
         var image = BitmapSource.Create(width, absH, 96, 96, format, null, pixels, stride);
