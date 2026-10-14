@@ -174,6 +174,23 @@ internal static class NativeMethods
     public const uint WM_HOTKEY = 0x0312;
     public static readonly IntPtr HWND_MESSAGE = new(-3);
 
+    // ---- raw clipboard ----
+
+    /// <summary>CF_DIBV5: a BITMAPV5HEADER plus the pixel data, and the only
+    /// DIB flavour that carries an alpha channel. WPF's Clipboard.GetImage()
+    /// reads CF_DIB, which has none, so a screenshot with a transparent
+    /// background arrives with its margins already black.</summary>
+    public const uint CF_DIBV5 = 17;
+
+    [DllImport("user32.dll")] public static extern bool OpenClipboard(IntPtr hWndNewOwner);
+    [DllImport("user32.dll")] public static extern bool CloseClipboard();
+    [DllImport("user32.dll")] public static extern bool EmptyClipboard();
+    [DllImport("user32.dll")] public static extern IntPtr GetClipboardData(uint format);
+    [DllImport("user32.dll")] public static extern bool IsClipboardFormatAvailable(uint format);
+    [DllImport("kernel32.dll")] public static extern IntPtr GlobalLock(IntPtr hMem);
+    [DllImport("kernel32.dll")] public static extern bool GlobalUnlock(IntPtr hMem);
+    [DllImport("kernel32.dll")] public static extern UIntPtr GlobalSize(IntPtr hMem);
+
     [DllImport("user32.dll")]
     public static extern bool AddClipboardFormatListener(IntPtr hwnd);
 

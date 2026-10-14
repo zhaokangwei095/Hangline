@@ -20,6 +20,15 @@ public sealed class HotKeyManager : IDisposable
     private readonly Dictionary<string, Shortcut> _current = [];
     private int _next = 1;
 
+    /// <summary>
+    /// How long a repeat of the same id is ignored. A keypress cannot physically
+    /// repeat faster than a human can press again, so this only has to be
+    /// longer than the message burst one press produces.
+    /// </summary>
+    private const double Debounce = 0.25;
+
+    private readonly Dictionary<int, long> _lastFire = [];
+
     public HotKeyManager(MessageSink sink)
     {
         _sink = sink;
@@ -81,6 +90,7 @@ public sealed class HotKeyManager : IDisposable
         NativeMethods.UnregisterHotKey(_sink.Handle, id);
         _ids.Remove(name);
         _handlers.Remove(id);
+        _lastFire.Remove(id);
         _current.Remove(name);
     }
 
@@ -96,6 +106,20 @@ public sealed class HotKeyManager : IDisposable
             Shell.Log.Write($"hotkey id={id} has no handler");
             return;
         }
+
+        // A single physical press can deliver several WM_HOTKEY messages, and
+        // MOD_NOREPEAT does not stop them: it only suppresses the auto-repeat
+        // of a held key. Print Screen is the worst offender — one press measured
+        // three messages, so one screenshot became three. The window is short
+        // enough that a genuine second press is never inside it.
+        long now = System.Diagnostics.Stopwatch.GetTimestamp();
+        if (_lastFire.TryGetValue(id, out long at))
+        {
+            double since = (now - at) / (double)System.Diagnostics.Stopwatch.Frequency;
+            if (since < Debounce) return;
+        }
+        _lastFire[id] = now;
+
         Shell.Log.Write($"hotkey id={id} fired");
         handler();
     }

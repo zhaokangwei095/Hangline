@@ -122,8 +122,10 @@ public sealed class ClipboardWatcher : IDisposable
 
         if (!hasImage) return;
 
-        byte[]? raw = ClipboardPng() ?? DecodeToPng();
+        byte[]? raw = ClipboardDibV5() ?? ClipboardPng() ?? DecodeToPng();
         if (raw is null || raw.LongLength == 0) return;
+        Log.Write($"clipboard image: {raw.LongLength} bytes via " +
+                  $"{(NativeMethods.IsClipboardFormatAvailable(NativeMethods.CF_DIBV5) ? "DIBV5" : Clipboard.ContainsData("PNG") ? "PNG" : "GetImage")}");
 
         // A screenshot tool that hands over a bitmap (WeChat's Alt+A) gives a
         // PNG with a transparent background. Keeping the transparency would
@@ -162,7 +164,101 @@ public sealed class ClipboardWatcher : IDisposable
 
     /// <summary>
     /// The clipboard's own PNG bytes, when the copying app put a PNG there.
-    /// This is the only path that keeps the alpha channel: WPF's
+    /// WPF's <c>Clipboard.GetImage()</c> goes through CF_DIB, a 24-bit format
+    /// with no transparency, so a screenshot with a transparent background
+    /// arrives with its margins already flattened to black. CF_DIBV5 is the
+    /// DIB flavour that does carry an alpha channel, so it is read first.
+    /// </summary>
+    private static byte[]? ClipboardDibV5()
+    {
+        IntPtr handle = IntPtr.Zero;
+        try
+        {
+            if (!NativeMethods.IsClipboardFormatAvailable(NativeMethods.CF_DIBV5)) return null;
+            if (!NativeMethods.OpenClipboard(IntPtr.Zero)) return null;
+
+            handle = NativeMethods.GetClipboardData(NativeMethods.CF_DIBV5);
+            if (handle == IntPtr.Zero) return null;
+
+            IntPtr data = NativeMethods.GlobalLock(handle);
+            if (data == IntPtr.Zero) return null;
+            try
+            {
+                ulong size = NativeMethods.GlobalSize(handle).ToUInt64();
+                if (size < 124) return null;         // smaller than a v5 header
+
+                var buffer = new byte[size];
+                System.Runtime.InteropServices.Marshal.Copy(data, buffer, 0, (int)size);
+                return DibV5ToPng(buffer);
+            }
+            finally
+            {
+                NativeMethods.GlobalUnlock(handle);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Write($"clipboard dibv5: {ex.GetType().Name} {ex.Message}");
+            return null;
+        }
+        finally
+        {
+            if (handle != IntPtr.Zero) NativeMethods.CloseClipboard();
+        }
+    }
+
+    /// <summary>
+    /// Turns a CF_DIBV5 blob into PNG bytes. The header is a BITMAPV5HEADER;
+    /// only the fields that matter for a screenshot are read: width, height,
+    /// bit count and, when present, the alpha mask that says which pixels are
+    /// transparent. Rows are bottom-up and padded to four bytes.
+    /// </summary>
+    private static byte[]? DibV5ToPng(byte[] dib)
+    {
+        int width = BitConverter.ToInt32(dib, 4);
+        int height = BitConverter.ToInt32(dib, 8);
+        short bits = BitConverter.ToInt16(dib, 14);
+        uint compression = BitConverter.ToUInt32(dib, 16);
+        // BITMAPV5HEADER: the colour and alpha masks sit at 40/44/48/52.
+        uint redMask = BitConverter.ToUInt32(dib, 40);
+        uint greenMask = BitConverter.ToUInt32(dib, 44);
+        uint blueMask = BitConverter.ToUInt32(dib, 48);
+        uint alphaMask = BitConverter.ToUInt32(dib, 52);
+
+        // BI_RGB is the only compression a screenshot tool writes; anything
+        // else means this reader does not apply.
+        if (width <= 0 || height <= 0 || bits != 32 || compression != 0) return null;
+
+        int absH = Math.Abs(height);
+        int stride = width * 4;
+        int header = 124;                            // sizeof(BITMAPV5HEADER)
+        int expected = header + stride * absH;
+        if (dib.Length < expected) return null;
+
+        var pixels = new byte[stride * absH];
+        // A positive height means the rows are bottom-up.
+        bool bottomUp = height > 0;
+        for (int row = 0; row < absH; row++)
+        {
+            int from = header + row * stride;
+            int to = (bottomUp ? absH - 1 - row : row) * stride;
+            System.Buffer.BlockCopy(dib, from, pixels, to, stride);
+        }
+
+        // An alpha mask of zero means the high byte is unused padding rather
+        // than opacity, and there is nothing to preserve.
+        PixelFormat format = alphaMask != 0 ? PixelFormats.Bgra32 : PixelFormats.Bgr32;
+
+        var image = BitmapSource.Create(width, absH, 96, 96, format, null, pixels, stride);
+        image.Freeze();
+
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(image));
+        using var ms = new MemoryStream();
+        encoder.Save(ms);
+        return ms.ToArray();
+    }
+    /// <summary>
     /// <c>Clipboard.GetImage()</c> goes through CF_DIB, which is a 24-bit
     /// format with no transparency, so a screenshot with a transparent
     /// background (WeChat's Alt+A is the one that does this) would arrive
