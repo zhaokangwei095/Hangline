@@ -53,3 +53,6 @@ Write-Output "portable zip : $zipName  $(MB $zip) MB  ($($sw.Elapsed.TotalSecond
 Write-Output "single file  : $exeName  $(MB $exe) MB"
 Write-Output ""
 Write-Output "These two live in the repository root and are gitignored — attach them to the release, do not commit them."
+Write-Output ""
+Write-Output "Attach with English labels, so the assets list reads the same in every locale:"
+Write-Output "  gh release create v<ver> `"$zipName#Portable folder (recommended, $(MB $zip) MB)`" `"$exeName#Single file ($(MB $exe) MB)`""

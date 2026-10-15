@@ -36,8 +36,8 @@ Windows 的触发带在屏幕最上边缘，而复制图片时指针在浏览器
 
 | 文件 | 体积 | 适合 |
 |:--|:--|:--|
-| `Hangline-0.1.1-win-x64-portable.zip` | 76.4 MB | **大多数人**。解压后双击 `Hangline.exe` |
-| `Hangline-0.1.1-win-x64-singlefile.exe` | 221.1 MB | 只传一个文件的场合 |
+| `Hangline-0.1.1-win-x64-portable.zip` | 76.4 MB | **大多数人**。解压后双击 `Hangline.exe`（Assets 里标注为 Portable folder） |
+| `Hangline-0.1.1-win-x64-singlefile.exe` | 221.1 MB | 只传一个文件的场合（Assets 里标注为 Single file） |
 
 两者都是自包含的：目标机器**不需要安装 .NET 运行库**，不需要管理员权限，Windows 10 /
 11 均可。**解压后请从 `Hangline.exe` 启动**，不要用 `dotnet Hangline.dll`：进程的 DPI
