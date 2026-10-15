@@ -3,10 +3,11 @@
   Package the two distributable forms so they can be attached to a GitHub release.
 
 .DESCRIPTION
-  Writes into the repository root, which is not gitignored for *.zip — delete the
-  files or move them elsewhere before committing. The portable folder is zipped
-  with its contents at the archive root, so unzipping yields Hangline.exe next to
-  the runtime rather than one folder deeper.
+  Writes into the repository root. That path is covered by
+  `Hangline-*-win-x64-*.zip` / `*.exe` in .gitignore, so the artifacts are never
+  committed by accident — they go up as GitHub release assets. The portable
+  folder is zipped with its contents at the archive root, so unzipping yields
+  Hangline.exe next to the runtime rather than one folder deeper.
 
 .EXAMPLE
   powershell -File scripts/pack-release.ps1
@@ -51,4 +52,4 @@ function MB($p) { [math]::Round((Get-Item $p).Length / 1MB, 1) }
 Write-Output "portable zip : $zipName  $(MB $zip) MB  ($($sw.Elapsed.TotalSeconds.ToString('0.0')) s)"
 Write-Output "single file  : $exeName  $(MB $exe) MB"
 Write-Output ""
-Write-Output "These two live in the repository root and are NOT gitignored — move them before committing."
+Write-Output "These two live in the repository root and are gitignored — attach them to the release, do not commit them."
