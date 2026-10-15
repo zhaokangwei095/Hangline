@@ -36,8 +36,12 @@ Windows 的触发带在屏幕最上边缘，而复制图片时指针在浏览器
 
 | 文件 | 体积 | 适合 |
 |:--|:--|:--|
-| `Hangline-0.1.1-win-x64-portable.zip` | 76.4 MB | **大多数人**。解压后双击 `Hangline.exe`（Assets 里标注为 Portable folder） |
-| `Hangline-0.1.1-win-x64-singlefile.exe` | 221.1 MB | 只传一个文件的场合（Assets 里标注为 Single file） |
+| `Hangline-0.1.1-win-x64-portable.zip` | 76.4 MB | **大多数人**。解压后双击 `Hangline.exe` |
+| `Hangline-0.1.1-win-x64-singlefile.exe` | 221.1 MB | 只传一个文件的场合 |
+
+体积在下载之前看不到，所以写在这里：便携目录解压后约 200 MB，单文件 221 MB。**单文件更大
+也更慢**——WPF 的原生 dll 无法打包进单文件，每次启动都要先解包到 `%TEMP%\.net`。实测冷启动：
+便携目录 4.3 s，单文件 4.9 s。所以默认推荐便携目录，单文件只给"只能传一个文件"的场合。
 
 两者都是自包含的：目标机器**不需要安装 .NET 运行库**，不需要管理员权限，Windows 10 /
 11 均可。**解压后请从 `Hangline.exe` 启动**，不要用 `dotnet Hangline.dll`：进程的 DPI
