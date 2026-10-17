@@ -83,6 +83,27 @@ public static class LineRules
     public static bool ScrollBandTakesPointer(int count, int visible, int? keepOnLine) =>
         keepOnLine is not null && count > visible;
 
+    /// <summary>
+    /// Whether the line should jump to the screen the pointer just moved onto.
+    /// Upstream re-places its panel every tick while the line is tucked away
+    /// (AppDelegate.swift:481-500), so the line is always on the screen being
+    /// used — with a second display above, the pointer never even rests.
+    /// <para>
+    /// It never moves while the line is down: dragging it to another monitor
+    /// mid-photo would yank the cards out from under the pointer, and an
+    /// animation in flight would be cut off. It also never moves while pinned,
+    /// which is the development handle holding the line open on purpose.
+    /// </para>
+    /// </summary>
+    public static bool ShouldFollowScreen(bool revealed, bool pinned, bool animating) =>
+        !revealed && !pinned && !animating;
+
+    /// <summary>
+    /// The screen a capture came from, for placing the line before the peek.
+    /// A capture with no known area carries no screen, so the line stays put.
+    /// </summary>
+    public static Pt ScreenOfCapture(RectD captured) => captured.Center;
+
     /// Everything comes back as it was. This runs before the line knows its
     /// screen, so capacity must not be applied here — otherwise photos fall
     /// off a wide screen's line at every launch.

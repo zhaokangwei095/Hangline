@@ -57,6 +57,10 @@ public sealed partial class AppServices
 
     public PeggedItem? HangFile(string path, RectD? captured = null)
     {
+        // A capture knows which screen it came from; the line goes there rather
+        // than on whichever screen it last happened to be on.
+        if (captured is { } from) LineWindow?.PlaceForCapture(from);
+
         PeggedItem? item = Model.Hang(path, flying: true, quietly: Settings.QuietHang, captured: captured);
         if (item is null) return null;
 

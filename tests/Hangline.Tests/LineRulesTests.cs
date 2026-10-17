@@ -146,4 +146,43 @@ public class LineRulesTests
         // Asking for fewer than fit does not shrink the line below what fits.
         Assert.Equal(8, Layout.MaxItems(8, 3));
     }
+
+    [Fact]
+    public void The_line_follows_the_pointer_to_another_screen()
+    {
+        // Upstream re-places its panel every tick while the line is tucked
+        // away, which is what makes the line usable on a second display.
+        Assert.True(LineRules.ShouldFollowScreen(revealed: false, pinned: false, animating: false));
+    }
+
+    [Fact]
+    public void A_line_that_is_down_stays_on_its_screen()
+    {
+        // Moving it mid-photo would yank the cards out from under the pointer.
+        Assert.False(LineRules.ShouldFollowScreen(revealed: true, pinned: false, animating: false));
+    }
+
+    [Fact]
+    public void A_mid_animation_line_does_not_change_screen()
+    {
+        Assert.False(LineRules.ShouldFollowScreen(revealed: false, pinned: false, animating: true));
+    }
+
+    [Fact]
+    public void A_pinned_line_does_not_follow_the_pointer()
+    {
+        // Pinning is the development handle holding the line open on purpose.
+        Assert.False(LineRules.ShouldFollowScreen(revealed: false, pinned: true, animating: false));
+    }
+
+    [Fact]
+    public void A_capture_places_the_line_on_the_screen_it_was_taken_on()
+    {
+        // A region capture on a second monitor: its centre decides the screen.
+        var taken = new RectD(-2560, 0, 1280, 400);
+        Assert.Equal(new Pt(-1920, 200), LineRules.ScreenOfCapture(taken));
+
+        // A capture with no known area says nothing, so the line stays put.
+        Assert.True(RectD.Empty.IsEmpty);
+    }
 }

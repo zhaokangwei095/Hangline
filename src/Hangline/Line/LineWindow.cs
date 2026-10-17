@@ -37,13 +37,19 @@ public sealed class LineWindow : Window, ILineHost
     private readonly FlightDirector _flights = new();
     private readonly DispatcherTimer _breeze = new();
 
-    private Passthrough? _passthrough;
     private IntPtr _hwnd;
     private MonitorInfo _monitor;
     private double _scale = 1;
     private bool _placed;
     private double _lastTrace;
+
+    private Passthrough? _passthrough;
+
     private static readonly bool HitTrace = Environment.GetEnvironmentVariable("HANGLINE_HIT") == "1";
+
+    /// The screen the line hangs on. One at a time; <see cref="FollowCursor"/>
+    /// moves it when the pointer settles onto another one.
+    public MonitorInfo Screen => _monitor;
 
     public LineWindow(LineModel model)
     {
@@ -289,6 +295,51 @@ public sealed class LineWindow : Window, ILineHost
     private RectD WindowRectPhysical() => new(_monitor.Bounds.X, _monitor.Bounds.Y,
         _monitor.Bounds.Width, Layout.PanelHeight(_model.Size) * _scale);
 
+    /// <summary>
+    /// The line hangs on the screen you are using, which is the one with the
+    /// pointer — the same screen you just took the screenshot on. It moves when
+    /// that changes, and only while it is tucked away: once the line is down,
+    /// dragging it to another monitor mid-photo would yank the cards out from
+    /// under the pointer.
+    /// <para>
+    /// Upstream does exactly this every tick (AppDelegate.swift:481-500): it
+    /// recomputes the screen under the pointer and re-places the panel when it
+    /// differs. That is not an optimisation — with a second display the line
+    /// would sit on one monitor while the user is working on another, and this
+    /// is the only way it follows.
+    /// </para>
+    /// </summary>
+    private void FollowCursor(Pt cursorPhysical)
+    {
+        // A pinned line is being looked at deliberately; moving it here would
+        // fight the --pin development handle. Mid-animation the window is on
+        // its way up or down and moving it would cut that short.
+        if (_monitor.Handle == IntPtr.Zero) return;
+        if (!LineRules.ShouldFollowScreen(_model.Revealed, _reveal.Pinned,
+                                          _motion.RevealActive || _motion.Retracting)) return;
+
+        MonitorInfo? next = Dpi.MonitorAt(cursorPhysical);
+        if (next is not { } monitor || monitor.Handle == _monitor.Handle) return;
+
+        Place(monitor);
+        Shell.Log.Write($"line moved to {monitor.Device} ({monitor.Bounds.Width}x{monitor.Bounds.Height} @{monitor.Scale:0.##}x)");
+    }
+
+    /// <summary>
+    /// Place the line on the screen a capture came from, so a photo taken on
+    /// another monitor has its line and its flight start there. Called before
+    /// the peek so the line is already on the right screen when it appears.
+    /// </summary>
+    public void PlaceForCapture(RectD captured)
+    {
+        if (captured.IsEmpty) return;
+        MonitorInfo? monitor = Dpi.MonitorAt(captured.Center);
+        if (monitor is not { } m) return;
+        if (m.Handle != IntPtr.Zero && m.Handle == _monitor.Handle) return;
+        Place(m);
+        Shell.Log.Write($"line placed on {m.Device} for capture");
+    }
+
     // MARK: - reveal
 
     private void ShowLine(bool reveal)
@@ -319,6 +370,8 @@ public sealed class LineWindow : Window, ILineHost
 
     private void OnPoll(double dt, Pt cursorPhysical)
     {
+        FollowCursor(cursorPhysical);
+
         RectD window = WindowRectPhysical();
         bool inBand = cursorPhysical.Y <= _monitor.Bounds.Y + RevealController.BandDepth
                       && cursorPhysical.X >= window.Left && cursorPhysical.X < window.Right;

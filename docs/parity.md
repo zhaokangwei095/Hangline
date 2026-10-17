@@ -157,6 +157,39 @@ Windows 没有等价 API：任何外部编辑器都不会通知你。
 探测不到 ffmpeg 时，剪辑窗口会明说"这台电脑上没有 ffmpeg，剪不了这段"，并把按钮
 变成「打开」交给系统播放器——而不是假装保存成功了。
 
+### 绳子只会停在启动那一块屏上（曾漏掉，现已按原版每帧换屏）
+
+原版每个 tick 都重算指针下的屏幕，换屏就搬家：
+
+```swift
+if panel.screen != screen { panel.placeOnScreen(); updateCapacity() }
+```
+
+`AppDelegate.swift:481-500`，且 `:188` 的注释专门点出这个场景——*"it also works
+when another display sits above and the pointer never stops"*：另一块屏摆在上方时
+指针根本不会停留，所以每帧换屏是必须的，不是优化。
+
+这里一度漏了整条规则：`_monitor` 在 `SourceInitialized` 里按光标选一次屏，之后永远
+是那块。`OnPoll` 里的 `inBand` 判定写的是 `cursorY <= _monitor.Bounds.Y + BandDepth`，
+所以外接屏顶边永远不触发——**把手停麻了绳子也不会下来**。`BlockedByFullScreen`、
+`WindowRectPhysical`、卡片坐标换算全绑在同一块屏上。
+
+修法（`LineWindow.FollowCursor`，每帧一次）：
+
+- 收起状态跟随光标换屏，和原版一致；
+- 绳子**放着的时候不换**：正看着照片把它瞬移到另一块屏会把卡片从指针底下拽走；
+- 动画进行中不换，否则放绳/收绳会被拦腰切断；
+- `--pin` 时不换，那是开发期故意把绳子按住的手柄；
+- 截图时按 `captured` 矩形反查屏幕（原版 `hangCapture` 的做法），否则在外接屏上截的
+  图会领着主屏顶上的绳子 peek。
+
+规则本身放在 `Core/LineRules.ShouldFollowScreen`，`LineRules` 是纯函数、可单测；
+`LineWindow` 只负责触发。多屏几何用一个 2560×1600 双屏（第二块在左，负 X）的探针
+验过：按各自屏幕边界判定，左屏顶边不再被判到主屏以外。
+
+**未由真人验收**：这台机器只接了一块屏，双屏行为是用合成几何验的，插上外接屏请按
+`docs/manual-test.md` 走一遍。
+
 ## 适配（Windows 上本来就没有对应物）
 
 | 原版 | 这里 |
