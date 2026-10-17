@@ -64,7 +64,7 @@ scripts/dev.ps1                                # 编译并启动
 scripts/publish.ps1                            # 产出 publish\Hangline\ 便携目录
 scripts/publish.ps1 -SingleFile                # 单文件变体
 scripts/pack-release.ps1                       # 打出上面这两个发布产物
-dotnet test                                    # 118 个单元测试
+dotnet test                                    # 123 个单元测试
 ```
 
 MIT License。Copyright (c) 2026 Alejandro Buján（原版），本移植版同样以 MIT 发布。

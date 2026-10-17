@@ -224,7 +224,7 @@ scripts/dev.ps1              # 编译并启动真正的 exe
 scripts/dev.ps1 -Extra "--pin"   # 让绳子常驻，方便看
 scripts/stop.ps1             # 停掉所有实例（含 dotnet 宿主起的）
 scripts/publish.ps1          # 便携目录；-SingleFile 出单文件变体
-dotnet test                  # 118 个单元测试
+dotnet test                  # 123 个单元测试
 ```
 
 必须用 `Hangline.exe` 启动，不要用 `dotnet Hangline.dll`：进程的 DPI 感知度取自 exe 的
